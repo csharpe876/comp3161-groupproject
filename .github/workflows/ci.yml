@@ -1,0 +1,100 @@
+name: CI / CD
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main]
+
+jobs:
+  # ── Backend lint ─────────────────────────────────────────────────────────
+  backend-lint:
+    name: Lint Python (flake8)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install flake8
+        working-directory: backend
+
+      - name: Run flake8 (syntax + name errors)
+        run: |
+          flake8 . --count --select=E9,F63,F7,F82 \
+                   --show-source --statistics
+        working-directory: backend
+
+      - name: Run flake8 (code style)
+        run: |
+          flake8 . --count --max-line-length=120 \
+                   --extend-ignore=E501 --statistics
+        working-directory: backend
+
+  # ── Frontend type-check + build ──────────────────────────────────────────
+  frontend-build:
+    name: Type-check & Build React
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+        working-directory: frontend
+
+      - name: TypeScript type-check
+        run: npx tsc --noEmit
+        working-directory: frontend
+
+      - name: Vite build
+        run: npm run build
+        working-directory: frontend
+
+  # ── Docker build verification ─────────────────────────────────────────────
+  docker-build:
+    name: Docker Compose build
+    runs-on: ubuntu-latest
+    needs: [backend-lint, frontend-build]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build all images
+        run: docker compose build --no-cache
+
+  # ── Publish images to Docker Hub (main branch only) ──────────────────────
+  publish:
+    name: Push images to Docker Hub
+    runs-on: ubuntu-latest
+    needs: docker-build
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build & push backend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./backend
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/cms-backend:latest
+
+      - name: Build & push frontend
+        uses: docker/build-push-action@v5
+        with:
+          context: ./frontend
+          push: true
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/cms-frontend:latest

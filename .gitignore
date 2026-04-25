@@ -1,0 +1,57 @@
+# ── Environment & Secrets ────────────────────────────────────────────────────
+.env
+.env.local
+.env.*.local
+*.key
+*.pem
+*.p12
+*.pfx
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+.venv/
+venv/
+env/
+pip-log.txt
+pip-delete-this-directory.txt
+*.egg-info/
+dist/
+build/
+.mypy_cache/
+.ruff_cache/
+
+# ── Node / Frontend ──────────────────────────────────────────────────────────
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/coverage/
+*.tsbuildinfo
+
+# ── Database dumps (may contain sensitive data) ──────────────────────────────
+project_insert_data.sql
+*.sql.gz
+*.dump
+
+# ── Docker ───────────────────────────────────────────────────────────────────
+# Keep docker-compose.yml but ignore any override files with secrets
+docker-compose.override.yml
+
+# ── OS & Editor artifacts ────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+.idea/
+.vscode/settings.json
+*.swp
+*.swo
+
+# ── Logs ─────────────────────────────────────────────────────────────────────
+*.log
+logs/
+
+# ── PostgreSQL data volume (if mounted locally) ──────────────────────────────
+pgdata/
