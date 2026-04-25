@@ -1,7 +1,3 @@
--- ============================================================
--- COMP3161 Course Management System — Performance Indexes
--- ============================================================
-
 -- Users
 CREATE INDEX IF NOT EXISTS idx_users_account_type ON Users(AccountType);
 CREATE INDEX IF NOT EXISTS idx_users_email        ON Users(Email);
