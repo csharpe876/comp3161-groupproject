@@ -199,7 +199,7 @@ pip install -r requirements.txt
 
 # Set DATABASE_URL in .env to point at your local Postgres, e.g.:
 # DATABASE_URL=postgresql://project_user:password@localhost:5432/comp3161-group_project
-flask --app app:create_app run --debug
+flask --app app --debug run
 
 # Frontend
 cd frontend
