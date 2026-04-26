@@ -25,7 +25,7 @@ Full-stack course management platform built for the COMP3161 final project.
 │   └── routes/           Blueprints: auth, courses, calendar,
 │                         forums, content, assignments, reports
 ├── database/
-│   ├── schema.sql        CREATE TABLE statements (12 tables)
+│   ├── schema.sql        CREATE TABLE statements
 │   ├── views.sql         5 report views
 │   └── indexes.sql       Performance indexes
 ├── frontend/             React SPA (Vite + TypeScript + Tailwind)
@@ -37,6 +37,8 @@ Full-stack course management platform built for the COMP3161 final project.
 │       └── services/     Axios instance with JWT interceptor
 ├── nginx/nginx.conf      Reverse proxy + SPA fallback
 ├── insertdata.py         Seed-data generator (100k students, 200 courses)
+├── project_insert_data.sql  Pre-generated seed data (auto-loaded on first start)
+├── test_users.sql        Pre-seeded test accounts (auto-loaded on first start)
 ├── docker-compose.yml
 └── .github/workflows/ci.yml
 ```
@@ -48,39 +50,74 @@ Full-stack course management platform built for the COMP3161 final project.
 ```bash
 # 1. Clone the repo
 git clone <repo-url>
-cd comp3161-project
+cd comp3161-groupproject
 
 # 2. Configure environment
 cp .env.example .env
-# Edit .env and set a strong JWT_SECRET_KEY
+```
 
-# 3. Start all services (DB, backend, frontend)
-docker compose up --build
+Edit `.env` and set all required values:
+
+```env
+# PostgreSQL credentials (must match across all services)
+POSTGRES_DB=comp3161-group_project
+POSTGRES_USER=project_user
+POSTGRES_PASSWORD=your-db-password
+
+# Flask JWT secret — use a long random string in production
+JWT_SECRET_KEY=change-me-to-a-long-random-secret
+
+FLASK_ENV=production
+```
+
+```bash
+# 3. Start all services (DB, backend, frontend, nginx)
+docker compose up -d --build
 
 # 4. Open http://localhost in your browser
 ```
 
-PostgreSQL is also exposed on port 5432 for local DBA access.
+On the **first start**, Docker automatically runs the following init scripts in order:
+1. `database/schema.sql` — creates all tables
+2. `database/views.sql` — creates report views
+3. `database/indexes.sql` — creates indexes
+4. `test_users.sql` — inserts pre-seeded test accounts
+5. `project_insert_data.sql` — inserts full dataset (100k students, 200 courses, etc.)
 
-### Seeding the Database
+> **Note:** The initial seed load can take a minute or two. Check `docker compose logs -f db` to monitor progress.
 
-After the containers are up, load the generated SQL dump (or re-generate it):
+PostgreSQL is also exposed on **port 5433** (to avoid conflicts with a locally installed Postgres instance):
 
 ```bash
-# Option A: use the pre-generated file
-docker exec -i comp3161-project-db-1 \
-  psql -U courseuser -d coursedb < project_insert_data.sql
-
-# Option B: regenerate (requires Python + faker)
-pip install faker
-python insertdata.py
-docker exec -i comp3161-project-db-1 \
-  psql -U courseuser -d coursedb < project_insert_data.sql
+psql -h localhost -p 5433 -U project_user -d comp3161-group_project
 ```
 
-> **Note:** Seeded users' passwords are SHA-256 hashes of `{FirstName}{LastName}{index}`.
-> They cannot log in via the normal API login flow. Create a fresh account via
-> `POST /api/auth/register` for API testing.
+### Test Accounts
+
+Three ready-to-use accounts are seeded automatically:
+
+| UserID | Password | Role |
+|---|---|---|
+| `test_student` | `password123` | Student |
+| `test_lecturer` | `password123` | Lecturer |
+| `test_admin` | `password123` | Admin |
+
+Use these with `POST /api/auth/login` or via the Login page.
+
+### Re-generating Seed Data
+
+```bash
+# Requires Python + faker
+pip install faker
+python insertdata.py   # overwrites project_insert_data.sql
+
+# Reload into a running container
+docker exec -i comp3161-groupproject-db-1 \
+  psql -U project_user -d comp3161-group_project < project_insert_data.sql
+```
+
+> **Note:** Bulk-seeded users' passwords are SHA-256 hashes and **cannot** log in via the API.
+> Use the test accounts above or register a new account via `POST /api/auth/register`.
 
 ---
 
@@ -153,12 +190,15 @@ docker exec -i comp3161-project-db-1 \
 ## Local Development (without Docker)
 
 ```bash
-# Backend
+# Backend — requires a locally running PostgreSQL instance
 cd backend
 python -m venv .venv
 .venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # macOS / Linux
 pip install -r requirements.txt
-# Set DATABASE_URL in .env pointing to your local Postgres
+
+# Set DATABASE_URL in .env to point at your local Postgres, e.g.:
+# DATABASE_URL=postgresql://project_user:password@localhost:5432/comp3161-group_project
 flask --app app:create_app run --debug
 
 # Frontend
@@ -174,17 +214,21 @@ npm run dev                   # Vite dev server at http://localhost:5173
 ```bash
 # On a server with Docker + Docker Compose installed:
 git clone <repo-url>
-cd comp3161-project
-cp .env.example .env          # set JWT_SECRET_KEY to a long random value
+cd comp3161-groupproject
+cp .env.example .env
+# Fill in POSTGRES_DB, POSTGRES_USER, POSTGRES_PASSWORD, and JWT_SECRET_KEY
 docker compose up -d --build
 ```
 
-Add your domain to the nginx `server_name` directive and set up SSL with Certbot.
+Add your domain to `nginx/nginx.conf`'s `server_name` directive and set up SSL with Certbot.
+
+---
 
 ## CI/CD
 
 GitHub Actions runs on every push/PR to `main` or `develop`:
-1. Python flake8 lint
-2. TypeScript type-check + Vite build
-3. Docker Compose build verification
-4. On merge to `main`: push images to Docker Hub (requires `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` secrets)
+
+1. **Lint Python** — flake8 (syntax + style)
+2. **TypeScript type-check + Vite build**
+3. **Docker Compose build verification** (requires lint + build to pass)
+4. **Push images to Docker Hub** — on merge to `main` only (requires `DOCKERHUB_USERNAME` + `DOCKERHUB_TOKEN` repository secrets)
