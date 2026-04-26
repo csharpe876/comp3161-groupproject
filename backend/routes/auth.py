@@ -63,15 +63,15 @@ def login():
     if not data:
         return jsonify({"error": "JSON body required"}), 400
 
-    user_id  = (data.get("userid") or "").strip()
-    password = (data.get("password") or "").strip()
+    identifier = (data.get("userid") or data.get("email") or "").strip()
+    password   = (data.get("password") or "").strip()
 
-    if not user_id or not password:
-        return jsonify({"error": "userid and password are required"}), 400
+    if not identifier or not password:
+        return jsonify({"error": "userid (or email) and password are required"}), 400
 
     user = query_one(
-        "SELECT UserID, Password, Name, Email, AccountType FROM Users WHERE UserID = %s",
-        (user_id,),
+        "SELECT UserID, Password, Name, Email, AccountType FROM Users WHERE UserID = %s OR Email = %s",
+        (identifier, identifier),
     )
 
     # Use a constant-time failure path to prevent timing attacks

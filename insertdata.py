@@ -2,6 +2,7 @@ from faker import Faker
 from collections import defaultdict
 import random
 import hashlib
+import bcrypt
 
 fake = Faker()
 f = open("project_insert_data.sql", "w")
@@ -297,6 +298,22 @@ def generate_submissions_and_grades(assignments, course_members, course_lecturer
             submission_id += 1
 
 
+def generate_test_users():
+    """Insert 3 fixed test users (student/lecturer/admin) with bcrypt passwords."""
+    test_users = [
+        ('test_student',  'student123',  'Test Student',  'test.student@uwi.edu',  'Student'),
+        ('test_lecturer', 'lecturer123', 'Test Lecturer', 'test.lecturer@uwi.edu', 'Lecturer'),
+        ('test_admin',    'admin123',    'Test Admin',    'test.admin@uwi.edu',    'Admin'),
+    ]
+    for uid, pw, name, email, atype in test_users:
+        hashed = bcrypt.hashpw(pw.encode(), bcrypt.gensalt()).decode()
+        f.write(
+            f"INSERT INTO Users(UserID, Password, Name, Email, AccountType) "
+            f"VALUES('{uid}', '{hashed}', '{name}', '{email}', '{atype}') "
+            f"ON CONFLICT (UserID) DO UPDATE SET Password=EXCLUDED.Password;\n"
+        )
+
+
 def main():
     departments = generate_departments()
     users = generate_users(NUM_STUDENTS, NUM_LECTURERS, NUM_ADMINS)
@@ -319,8 +336,11 @@ def main():
     assignments = generate_assignments(courses)
     generate_submissions_and_grades(assignments, course_members, course_lecturer)
 
+    generate_test_users()
+
     f.close()
     print("Data generation complete. SQL statements written to project_insert_data.sql")
+    print("Test users included: test_student/student123, test_lecturer/lecturer123, test_admin/admin123")
 
 
 if __name__ == "__main__":

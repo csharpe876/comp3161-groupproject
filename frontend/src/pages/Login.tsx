@@ -44,7 +44,7 @@ export default function Login() {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              User ID
+              User ID or Email
             </label>
             <input
               type="text"
@@ -52,7 +52,7 @@ export default function Login() {
               onChange={(e) => setUserid(e.target.value)}
               required
               className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              placeholder="e.g. S1 or L1"
+              placeholder="e.g. S1, L1, or user@uwi.edu"
             />
           </div>
 
