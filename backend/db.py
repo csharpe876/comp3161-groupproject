@@ -4,6 +4,7 @@ All queries use parameterised placeholders (%s) to prevent SQL injection.
 """
 from __future__ import annotations
 
+import time
 import psycopg2
 from psycopg2 import pool
 from psycopg2.extras import RealDictCursor
@@ -13,13 +14,21 @@ from config import Config
 _pool: pool.ThreadedConnectionPool | None = None
 
 
-def init_pool() -> None:
+def init_pool(retries: int = 10, delay: float = 5.0) -> None:
     global _pool
-    _pool = pool.ThreadedConnectionPool(
-        minconn=2,
-        maxconn=20,
-        dsn=Config.DATABASE_URL,
-    )
+    for attempt in range(1, retries + 1):
+        try:
+            _pool = pool.ThreadedConnectionPool(
+                minconn=2,
+                maxconn=20,
+                dsn=Config.DATABASE_URL,
+            )
+            return
+        except psycopg2.OperationalError as exc:
+            if attempt == retries:
+                raise
+            print(f"[db] DB not ready (attempt {attempt}/{retries}): {exc}. Retrying in {delay}s…")
+            time.sleep(delay)
 
 
 def _get_pool() -> pool.ThreadedConnectionPool:
