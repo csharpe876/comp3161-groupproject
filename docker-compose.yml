@@ -4,9 +4,9 @@ services:
     image: postgres:16-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_DB:       coursedb
-      POSTGRES_USER:     courseuser
-      POSTGRES_PASSWORD: coursepassword
+      POSTGRES_DB:       ${POSTGRES_DB}
+      POSTGRES_USER:     ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
       # Schema + views + indexes run in lexicographic order on first start
@@ -14,7 +14,7 @@ services:
       - ./database/views.sql:/docker-entrypoint-initdb.d/02-views.sql:ro
       - ./database/indexes.sql:/docker-entrypoint-initdb.d/03-indexes.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U courseuser -d coursedb"]
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -24,10 +24,12 @@ services:
   # ── Flask API ───────────────────────────────────────────────────────────────
   backend:
     build:
-      context: ./backend
+      context: .
+      dockerfile: backend/Dockerfile
     restart: unless-stopped
+    env_file: .env
     environment:
-      DATABASE_URL:     postgresql://courseuser:coursepassword@db:5432/coursedb
+      DATABASE_URL:     postgresql://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
       JWT_SECRET_KEY:   ${JWT_SECRET_KEY:-change-me-in-production}
       FLASK_ENV:        ${FLASK_ENV:-production}
     depends_on:

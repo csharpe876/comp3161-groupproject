@@ -80,6 +80,7 @@ def create_app() -> Flask:
 
     return app
 
+app.config.from_object(Config)
 
 if __name__ == "__main__":
     application = create_app()
