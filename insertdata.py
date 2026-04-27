@@ -41,8 +41,8 @@ def generate_users(NUM_STUDENTS, NUM_LECTURERS, NUM_ADMINS):
         fname = fake.first_name()
         lname = fake.last_name()
         name = f"{fname} {lname}"
-        email = f"{fname.lower()}.{lname.lower()}.admin{i}@uwi.edu"
-        password = hashlib.sha256(f"{fname}{lname}admin{i}".encode()).hexdigest()
+        email = f"{fname.lower()}.{lname.lower()}@uwi.edu"
+        password = hashlib.sha256(f"{fname}{lname}".encode()).hexdigest()
         users.append({'id': admin_id, 'name': name, 'email': email, 'type': 'Admin'})
         f.write(f"INSERT INTO Users(UserID, Password, Name, Email, AccountType) VALUES('{admin_id}', '{password}', '{esc(name)}', '{esc(email)}', 'Admin');\n")
     # Lecturers
@@ -51,8 +51,8 @@ def generate_users(NUM_STUDENTS, NUM_LECTURERS, NUM_ADMINS):
         fname = fake.first_name()
         lname = fake.last_name()
         name = f"{fname} {lname}"
-        email = f"{fname.lower()}.{lname.lower()}{i}@uwi.edu"
-        password = hashlib.sha256(f"{fname}{lname}{i}".encode()).hexdigest()
+        email = f"{fname.lower()}.{lname.lower()}@uwi.edu"
+        password = hashlib.sha256(f"{fname}{lname}".encode()).hexdigest()
         users.append({'id': lec_id, 'name': name, 'email': email, 'type': 'Lecturer'})
         f.write(f"INSERT INTO Users(UserID, Password, Name, Email, AccountType) VALUES('{lec_id}', '{password}', '{esc(name)}', '{esc(email)}', 'Lecturer');\n")
     # Students
@@ -61,8 +61,8 @@ def generate_users(NUM_STUDENTS, NUM_LECTURERS, NUM_ADMINS):
         fname = fake.first_name()
         lname = fake.last_name()
         name = f"{fname} {lname}"
-        email = f"{fname.lower()}.{lname.lower()}{i}@uwi.edu"
-        password = hashlib.sha256(f"{fname}{lname}{i}".encode()).hexdigest()
+        email = f"{fname.lower()}.{lname.lower()}@uwi.edu"
+        password = hashlib.sha256(f"{fname}{lname}".encode()).hexdigest()
         users.append({'id': student_id, 'name': name, 'email': email, 'type': 'Student'})
         f.write(f"INSERT INTO Users(UserID, Password, Name, Email, AccountType) VALUES('{student_id}', '{password}', '{esc(name)}', '{esc(email)}', 'Student');\n")
     return users
