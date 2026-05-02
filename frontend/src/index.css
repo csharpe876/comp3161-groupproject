@@ -1,3 +1,107 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-family: 'Inter', sans-serif;
+  }
+  body {
+    @apply bg-neutral-50 text-neutral-900 antialiased;
+  }
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-semibold text-neutral-900;
+  }
+  a {
+    @apply text-primary hover:text-primary-600 transition-colors;
+  }
+}
+
+@layer components {
+  /* Buttons */
+  .btn-primary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-primary text-white font-semibold text-sm
+           px-5 py-3 rounded-lg
+           hover:bg-primary-600 active:bg-primary-700
+           transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-secondary {
+    @apply inline-flex items-center justify-center gap-2
+           bg-secondary text-white font-semibold text-sm
+           px-5 py-3 rounded-lg
+           hover:bg-secondary-600 active:bg-secondary-700
+           transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-outline {
+    @apply inline-flex items-center justify-center gap-2
+           border border-primary text-primary font-semibold text-sm
+           px-5 py-3 rounded-lg
+           hover:bg-primary-50 active:bg-primary-100
+           transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed;
+  }
+  .btn-ghost {
+    @apply inline-flex items-center justify-center gap-2
+           text-neutral-500 font-medium text-sm
+           px-4 py-2 rounded-lg
+           hover:bg-neutral-100 active:bg-neutral-200
+           transition-colors duration-150;
+  }
+
+  /* Form inputs */
+  .input-field {
+    @apply w-full px-4 py-3 rounded-lg border border-neutral-200
+           bg-white text-neutral-900 text-sm placeholder:text-neutral-300
+           focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary
+           transition-colors duration-150;
+  }
+  .input-label {
+    @apply block text-sm font-medium text-neutral-700 mb-1.5;
+  }
+  .input-error {
+    @apply mt-1.5 text-xs text-error;
+  }
+
+  /* Cards */
+  .card {
+    @apply bg-white rounded-2xl border border-neutral-100 shadow-card p-6;
+  }
+  .card-hover {
+    @apply card hover:shadow-card-hover transition-shadow duration-200 cursor-pointer;
+  }
+
+  /* Badges */
+  .badge {
+    @apply inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium;
+  }
+  .badge-primary {
+    @apply badge bg-primary-50 text-primary;
+  }
+  .badge-secondary {
+    @apply badge bg-secondary-50 text-secondary;
+  }
+  .badge-success {
+    @apply badge bg-green-50 text-success;
+  }
+  .badge-warning {
+    @apply badge bg-orange-50 text-warning;
+  }
+
+  /* Page sections */
+  .page-header {
+    @apply mb-8;
+  }
+  .page-title {
+    @apply text-2xl font-bold text-neutral-900;
+  }
+  .page-subtitle {
+    @apply mt-1 text-sm text-neutral-400;
+  }
+
+  /* Dividers */
+  .divider {
+    @apply border-t border-neutral-100 my-4;
+  }
+}

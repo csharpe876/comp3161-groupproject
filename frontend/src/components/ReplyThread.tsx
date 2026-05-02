@@ -11,16 +11,18 @@ interface Props {
 
 export default function ReplyThread({ reply, depth = 0 }: Props) {
   return (
-    <div
-      className={`mt-3 ${depth > 0 ? 'ml-6 border-l-2 border-gray-200 pl-4' : ''}`}
-    >
-      <div className="bg-white rounded shadow-sm p-3">
-        <p className="text-xs text-gray-500 mb-1">
-          <span className="font-medium text-gray-700">{reply.authorname ?? reply.userid}</span>
+    <div className={`mt-3 ${depth > 0 ? 'ml-6 border-l-2 border-primary-100 pl-4' : ''}`}>
+      <div className="bg-white rounded-xl border border-neutral-100 shadow-card p-4">
+        <p className="text-xs text-neutral-400 mb-2">
+          <span className="font-semibold text-neutral-700">
+            {reply.authorname ?? reply.userid}
+          </span>
           {' · '}
           {new Date(reply.createdat).toLocaleString()}
         </p>
-        <p className="text-sm text-gray-800 whitespace-pre-wrap">{reply.content}</p>
+        <p className="text-sm text-neutral-800 whitespace-pre-wrap leading-relaxed">
+          {reply.content}
+        </p>
       </div>
 
       {reply.children?.map((child) => (

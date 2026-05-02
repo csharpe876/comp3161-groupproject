@@ -13,6 +13,8 @@ const REPORTS: { key: ReportKey; label: string }[] = [
   { key: 'top10-averages',   label: 'Top 10 students by average' },
 ]
 
+const inputCls = 'input-field'
+
 export default function AdminPanel() {
   const { user } = useAuth()
 
@@ -60,16 +62,19 @@ export default function AdminPanel() {
   }
 
   return (
-    <div className="space-y-10">
-      <h1 className="text-2xl font-bold text-gray-800">Admin Panel</h1>
+    <div className="space-y-8">
+      <div className="page-header">
+        <h1 className="page-title">Admin Panel</h1>
+        <p className="page-subtitle">Manage courses, staff, and view system reports</p>
+      </div>
 
-      {msg   && <p className="text-green-600 text-sm">{msg}</p>}
-      {error && <p className="text-red-600 text-sm">{error}</p>}
+      {msg   && <p className="text-success text-sm font-medium">{msg}</p>}
+      {error && <p className="text-error text-sm font-medium">{error}</p>}
 
       {/* ── Create Course ── */}
-      <section className="bg-white rounded-xl shadow p-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Create Course</h2>
-        <form onSubmit={createCourse} className="grid grid-cols-2 gap-3">
+      <section className="card">
+        <h2 className="font-semibold text-neutral-900 mb-5">Create Course</h2>
+        <form onSubmit={createCourse} className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           {(
             [
               { name: 'course_id',   label: 'Course ID',   placeholder: 'e.g. C201' },
@@ -79,95 +84,88 @@ export default function AdminPanel() {
             ] as const
           ).map(({ name, label, placeholder }) => (
             <div key={name}>
-              <label className="block text-xs font-medium text-gray-600 mb-1">{label}</label>
+              <label className="input-label">{label}</label>
               <input
                 value={courseForm[name]}
                 onChange={(e) => setCourseForm(f => ({ ...f, [name]: e.target.value }))}
                 placeholder={placeholder}
-                className="w-full border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+                className={inputCls}
                 required={name !== 'lec_id'}
               />
             </div>
           ))}
-          <div className="col-span-2">
-            <label className="block text-xs font-medium text-gray-600 mb-1">Description</label>
+          <div className="col-span-1 sm:col-span-2">
+            <label className="input-label">Description</label>
             <textarea
               value={courseForm.description}
               onChange={(e) => setCourseForm(f => ({ ...f, description: e.target.value }))}
               rows={2}
-              className="w-full border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className={inputCls}
             />
           </div>
-          <div className="col-span-2">
-            <button className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-5 py-2 rounded transition-colors">
-              Create Course
-            </button>
+          <div className="col-span-1 sm:col-span-2">
+            <button className="btn-primary">Create Course</button>
           </div>
         </form>
       </section>
 
       {/* ── Assign Lecturer ── */}
-      <section className="bg-white rounded-xl shadow p-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Assign Lecturer to Course</h2>
-        <form onSubmit={assignLecturer} className="flex gap-3 items-end">
+      <section className="card">
+        <h2 className="font-semibold text-neutral-900 mb-5">Assign Lecturer to Course</h2>
+        <form onSubmit={assignLecturer} className="flex flex-wrap gap-3 items-end">
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Course ID</label>
+            <label className="input-label">Course ID</label>
             <input
               value={assignForm.course_id}
               onChange={(e) => setAssignForm(f => ({ ...f, course_id: e.target.value }))}
               required
               placeholder="e.g. C1"
-              className="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className={`${inputCls} !w-36`}
             />
           </div>
           <div>
-            <label className="block text-xs font-medium text-gray-600 mb-1">Lecturer ID</label>
+            <label className="input-label">Lecturer ID</label>
             <input
               value={assignForm.lec_id}
               onChange={(e) => setAssignForm(f => ({ ...f, lec_id: e.target.value }))}
               required
               placeholder="e.g. L1"
-              className="border rounded px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+              className={`${inputCls} !w-36`}
             />
           </div>
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-5 py-2 rounded transition-colors">
-            Assign
-          </button>
+          <button className="btn-secondary">Assign</button>
         </form>
       </section>
 
       {/* ── Reports ── */}
-      <section className="bg-white rounded-xl shadow p-6 border border-gray-100">
-        <h2 className="text-lg font-semibold text-gray-700 mb-4">Reports</h2>
+      <section className="card">
+        <h2 className="font-semibold text-neutral-900 mb-5">Reports</h2>
         <div className="flex flex-wrap gap-2 mb-4">
           {REPORTS.map((r) => (
             <button
               key={r.key}
               onClick={() => setReport(r.key)}
-              className={`text-xs px-3 py-1.5 rounded border transition-colors ${
+              className={`text-xs px-3 py-1.5 rounded-lg border font-medium transition-colors ${
                 report === r.key
-                  ? 'bg-indigo-600 text-white border-indigo-600'
-                  : 'border-gray-300 text-gray-600 hover:border-indigo-400'
+                  ? 'bg-primary text-white border-primary'
+                  : 'border-neutral-200 text-neutral-500 hover:border-primary hover:text-primary'
               }`}
             >
               {r.label}
             </button>
           ))}
         </div>
-        <button
-          onClick={loadReport}
-          className="bg-gray-700 hover:bg-gray-800 text-white text-sm px-4 py-1.5 rounded mb-4 transition-colors"
-        >
+        <button onClick={loadReport} className="btn-outline !py-2 !text-xs mb-5">
           Run Report
         </button>
 
         {reportData.length > 0 && (
-          <div className="overflow-x-auto">
-            <table className="min-w-full text-xs border border-gray-200 rounded">
-              <thead className="bg-gray-50">
+          <div className="overflow-x-auto rounded-xl border border-neutral-100">
+            <table className="min-w-full text-xs">
+              <thead className="bg-neutral-50">
                 <tr>
                   {Object.keys(reportData[0]).map((k) => (
-                    <th key={k} className="px-3 py-2 text-left font-medium text-gray-600 border-b">
+                    <th key={k} className="px-4 py-3 text-left font-semibold text-neutral-600 border-b border-neutral-100">
                       {k}
                     </th>
                   ))}
@@ -175,9 +173,9 @@ export default function AdminPanel() {
               </thead>
               <tbody>
                 {reportData.map((row, i) => (
-                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-gray-50'}>
+                  <tr key={i} className={i % 2 === 0 ? 'bg-white' : 'bg-neutral-50/50'}>
                     {Object.values(row).map((v, j) => (
-                      <td key={j} className="px-3 py-2 text-gray-700 border-b">
+                      <td key={j} className="px-4 py-3 text-neutral-700 border-b border-neutral-100">
                         {String(v ?? '—')}
                       </td>
                     ))}

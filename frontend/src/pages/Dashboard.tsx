@@ -48,48 +48,74 @@ export default function Dashboard() {
 
   return (
     <div>
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold text-gray-800">
-          {user?.account_type === 'Admin' ? 'All Courses' : 'My Courses'}
-        </h1>
+      {/* Header */}
+      <div className="page-header flex items-center justify-between">
+        <div>
+          <h1 className="page-title">
+            {user?.account_type === 'Admin' ? 'All Courses' : 'My Courses'}
+          </h1>
+          <p className="page-subtitle">
+            {user?.account_type === 'Student'
+              ? 'Your enrolled courses'
+              : user?.account_type === 'Lecturer'
+              ? 'Courses you teach'
+              : 'All courses in the system'}
+          </p>
+        </div>
         <input
           type="search"
           placeholder="Search courses…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="border border-gray-300 rounded px-3 py-1.5 text-sm w-52 focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="input-field !w-52"
         />
       </div>
 
-      {loading && <p className="text-gray-500">Loading…</p>}
-      {error   && <p className="text-red-600">{error}</p>}
+      {loading && (
+        <div className="flex items-center justify-center py-16 text-neutral-400 text-sm">
+          Loading courses…
+        </div>
+      )}
+      {error && (
+        <div className="bg-red-50 border border-red-200 text-error rounded-xl px-4 py-3 text-sm">
+          {error}
+        </div>
+      )}
 
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {filtered.map((c) => (
           <Link
             key={c.courseid}
             to={`/courses/${c.courseid}`}
-            className="bg-white rounded-xl shadow hover:shadow-md transition-shadow p-5 border border-gray-100"
+            className="card-hover no-underline group block"
           >
-            <span className="text-xs font-semibold bg-indigo-100 text-indigo-700 px-2 py-0.5 rounded uppercase tracking-wide">
+            <span className="badge-primary uppercase tracking-wide text-[10px]">
               {c.coursecode}
             </span>
-            <h2 className="mt-2 text-base font-semibold text-gray-800 leading-snug">
+            <h2 className="mt-3 text-base font-semibold text-neutral-900 leading-snug
+                           group-hover:text-primary transition-colors">
               {c.coursetitle}
             </h2>
-            {c.lecturername && (
-              <p className="text-xs text-gray-500 mt-1">👤 {c.lecturername}</p>
-            )}
-            {c.enrolledcount !== undefined && (
-              <p className="text-xs text-gray-400 mt-1">
-                {c.enrolledcount} students
+            {c.description && (
+              <p className="mt-1 text-xs text-neutral-400 line-clamp-2">
+                {c.description}
               </p>
             )}
+            <div className="mt-4 flex items-center justify-between text-xs text-neutral-400">
+              {c.lecturername && <span>{c.lecturername}</span>}
+              {c.enrolledcount !== undefined && (
+                <span className="badge bg-neutral-100 text-neutral-500">
+                  {c.enrolledcount} students
+                </span>
+              )}
+            </div>
           </Link>
         ))}
 
         {!loading && filtered.length === 0 && (
-          <p className="text-gray-500 col-span-3">No courses found.</p>
+          <p className="col-span-3 text-neutral-400 text-sm py-8 text-center">
+            No courses found.
+          </p>
         )}
       </div>
     </div>

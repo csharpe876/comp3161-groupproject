@@ -38,42 +38,59 @@ export default function ForumDetail() {
     setThreads(data.threads)
   }
 
-  if (loading) return <p className="text-gray-500">Loading…</p>
+  if (loading) return (
+    <div className="flex items-center justify-center py-16 text-neutral-400 text-sm">Loading…</div>
+  )
 
   return (
     <div>
-      <Link to={`/courses/${courseId}`} className="text-indigo-500 text-sm hover:underline">
+      <Link
+        to={`/courses/${courseId}`}
+        className="inline-flex items-center gap-1 text-sm text-neutral-400
+                   hover:text-primary transition-colors no-underline"
+      >
         ← Back to course
       </Link>
-      <h1 className="text-2xl font-bold text-gray-800 mt-2 mb-6">{forumTitle}</h1>
+
+      <div className="page-header mt-3">
+        <h1 className="page-title">{forumTitle}</h1>
+      </div>
 
       <div className="space-y-3 mb-8">
         {threads.map((t) => (
           <Link
             key={t.threadid}
             to={`/courses/${courseId}/forums/${forumId}/threads/${t.threadid}`}
-            className="block bg-white rounded-lg shadow-sm p-4 hover:shadow-md border border-gray-100 transition-shadow"
+            className="card-hover no-underline block group"
           >
-            <p className="font-semibold text-gray-800">{t.title}</p>
-            <p className="text-xs text-gray-500 mt-1">
-              by {t.authorname} · {new Date(t.createdat).toLocaleString()} · {t.replycount} replies
+            <p className="font-semibold text-neutral-900 group-hover:text-primary transition-colors">
+              {t.title}
+            </p>
+            <p className="text-xs text-neutral-400 mt-1">
+              by {t.authorname}
+              {' · '}
+              {new Date(t.createdat).toLocaleString()}
+              {' · '}
+              {t.replycount} {t.replycount === 1 ? 'reply' : 'replies'}
             </p>
           </Link>
         ))}
-        {threads.length === 0 && <p className="text-gray-400 text-sm">No threads yet. Start one below.</p>}
+        {threads.length === 0 && (
+          <p className="text-neutral-400 text-sm">No threads yet. Start one below.</p>
+        )}
       </div>
 
-      {msg && <p className="text-green-600 text-sm mb-3">{msg}</p>}
+      {msg && <p className="text-success text-sm mb-3 font-medium">{msg}</p>}
 
-      <div className="bg-gray-50 rounded-lg p-5">
-        <h3 className="font-semibold text-gray-700 mb-3">Start a new thread</h3>
+      <div className="card">
+        <h3 className="font-semibold text-neutral-800 mb-4">Start a new thread</h3>
         <form onSubmit={handleCreate} className="space-y-3">
           <input
             placeholder="Title"
             value={newThread.title}
             onChange={(e) => setNewThread(t => ({ ...t, title: e.target.value }))}
             required
-            className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="input-field"
           />
           <textarea
             placeholder="Post content…"
@@ -81,11 +98,9 @@ export default function ForumDetail() {
             onChange={(e) => setNewThread(t => ({ ...t, content: e.target.value }))}
             required
             rows={4}
-            className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            className="input-field"
           />
-          <button className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-5 py-2 rounded transition-colors">
-            Post Thread
-          </button>
+          <button className="btn-primary">Post Thread</button>
         </form>
       </div>
     </div>

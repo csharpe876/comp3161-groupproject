@@ -1,6 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
+const roleColors: Record<string, string> = {
+  Admin:    'bg-secondary-50 text-secondary',
+  Lecturer: 'bg-primary-50 text-primary',
+  Student:  'bg-green-50 text-success',
+}
+
 export default function Navbar() {
   const { user, logout } = useAuth()
   const navigate = useNavigate()
@@ -11,32 +17,61 @@ export default function Navbar() {
   }
 
   return (
-    <nav className="bg-indigo-700 text-white px-6 py-3 flex items-center justify-between shadow-md">
-      <Link to="/" className="text-xl font-bold tracking-wide">
-        CMS
-      </Link>
-
-      <div className="flex items-center gap-6 text-sm">
-        <Link to="/" className="hover:text-indigo-200 transition-colors">
-          Courses
+    <nav className="sticky top-0 z-40 bg-white border-b border-neutral-100 shadow-card">
+      <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+        {/* Brand */}
+        <Link
+          to="/"
+          className="flex items-center gap-2 text-xl font-extrabold text-neutral-900 hover:no-underline"
+        >
+          <span className="text-primary">E</span>Tutor
         </Link>
 
-        {user?.account_type === 'Admin' && (
-          <Link to="/admin" className="hover:text-indigo-200 transition-colors">
-            Admin
+        {/* Nav links */}
+        <div className="hidden md:flex items-center gap-1">
+          <Link
+            to="/"
+            className="px-3 py-1.5 rounded-lg text-sm font-medium text-neutral-500
+                       hover:text-primary hover:bg-primary-50 transition-colors no-underline"
+          >
+            Dashboard
           </Link>
-        )}
 
-        <span className="text-indigo-300">
-          {user?.name} &middot; {user?.account_type}
-        </span>
+          {user?.account_type === 'Admin' && (
+            <Link
+              to="/admin"
+              className="px-3 py-1.5 rounded-lg text-sm font-medium text-neutral-500
+                         hover:text-secondary hover:bg-secondary-50 transition-colors no-underline"
+            >
+              Admin
+            </Link>
+          )}
+        </div>
 
-        <button
-          onClick={handleLogout}
-          className="bg-indigo-900 hover:bg-indigo-800 px-3 py-1 rounded transition-colors"
-        >
-          Log out
-        </button>
+        {/* User info + logout */}
+        <div className="flex items-center gap-3">
+          {user && (
+            <>
+              <span
+                className={`badge ${
+                  roleColors[user.account_type ?? ''] ?? 'bg-neutral-100 text-neutral-500'
+                }`}
+              >
+                {user.account_type}
+              </span>
+              <span className="hidden sm:block text-sm font-medium text-neutral-700">
+                {user.name}
+              </span>
+            </>
+          )}
+
+          <button
+            onClick={handleLogout}
+            className="btn-outline !px-3 !py-1.5 !text-xs"
+          >
+            Log out
+          </button>
+        </div>
       </div>
     </nav>
   )

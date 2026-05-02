@@ -67,30 +67,35 @@ export default function ThreadDetail() {
     loadThread()
   }
 
-  if (loading) return <p className="text-gray-500">Loading…</p>
+  if (loading) return (
+    <div className="flex items-center justify-center py-16 text-neutral-400 text-sm">Loading…</div>
+  )
   if (!thread) return null
 
   return (
     <div>
       <Link
         to={`/courses/${courseId}/forums/${forumId}`}
-        className="text-indigo-500 text-sm hover:underline"
+        className="inline-flex items-center gap-1 text-sm text-neutral-400
+                   hover:text-primary transition-colors no-underline"
       >
         ← Back to forum
       </Link>
 
       {/* Original post */}
-      <div className="mt-4 bg-white rounded-xl shadow p-5 border border-gray-100">
-        <h1 className="text-xl font-bold text-gray-800 mb-1">{thread.title}</h1>
-        <p className="text-xs text-gray-500 mb-3">
+      <div className="mt-4 card">
+        <h1 className="text-xl font-bold text-neutral-900 mb-1">{thread.title}</h1>
+        <p className="text-xs text-neutral-400 mb-4">
           by {thread.authorname} · {new Date(thread.createdat).toLocaleString()}
         </p>
-        <p className="text-sm text-gray-700 whitespace-pre-wrap">{thread.content}</p>
+        <p className="text-sm text-neutral-700 whitespace-pre-wrap leading-relaxed">
+          {thread.content}
+        </p>
       </div>
 
       {/* Reply tree */}
       <div className="mt-6">
-        <h2 className="text-sm font-semibold text-gray-600 mb-2">
+        <h2 className="text-sm font-semibold text-neutral-500 mb-3">
           {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
         </h2>
         {replies.map((r) => (
@@ -99,20 +104,18 @@ export default function ThreadDetail() {
       </div>
 
       {/* Reply form */}
-      {msg && <p className="text-green-600 text-sm mt-4">{msg}</p>}
-      <form onSubmit={handleReply} className="mt-6 bg-gray-50 rounded-lg p-4 space-y-3">
-        <h3 className="font-medium text-gray-700">Add a reply</h3>
+      {msg && <p className="text-success text-sm mt-4 font-medium">{msg}</p>}
+      <form onSubmit={handleReply} className="mt-6 card space-y-3">
+        <h3 className="font-semibold text-neutral-800">Add a reply</h3>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
           required
           rows={3}
           placeholder="Write your reply…"
-          className="w-full border rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+          className="input-field"
         />
-        <button className="bg-indigo-600 hover:bg-indigo-700 text-white text-sm px-5 py-2 rounded transition-colors">
-          Reply
-        </button>
+        <button className="btn-primary">Reply</button>
       </form>
     </div>
   )

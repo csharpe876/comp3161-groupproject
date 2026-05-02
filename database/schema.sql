@@ -1,8 +1,3 @@
--- ============================================================
--- COMP3161 Course Management System — Database Schema
--- PostgreSQL 16
--- ============================================================
-
 -- Users: admins, lecturers, students
 -- NOTE: Seeded users (from insertdata.py) use SHA-256 passwords.
 --       Users registered through the API use bcrypt hashes.

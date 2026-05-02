@@ -18,7 +18,7 @@ def _role() -> str:
 # ── List / Create courses ────────────────────────────────────────────────────
 
 
-@courses_bp.get("/courses")
+@courses_bp.route("/courses", methods=["GET"])
 def get_all_courses():
     """Public: list every course."""
     courses = query_all(
@@ -35,7 +35,7 @@ def get_all_courses():
     return jsonify(courses), 200
 
 
-@courses_bp.get("/courses/<course_id>")
+@courses_bp.route("/courses/<course_id>", methods=["GET"])
 @jwt_required()
 def get_course(course_id: str):
     course = query_one(
@@ -51,7 +51,7 @@ def get_course(course_id: str):
     return jsonify(course), 200
 
 
-@courses_bp.post("/courses")
+@courses_bp.route("/courses", methods=["POST"])
 @jwt_required()
 def create_course():
     """Admin only: create a new course."""
@@ -66,7 +66,7 @@ def create_course():
     title       = (data.get("title") or "").strip()
     code        = (data.get("code") or "").strip()
     description = (data.get("description") or "")
-    lec_id      = data.get("lec_id") or None
+    lec_id      = (data.get("lec_id") or "").strip() or None
 
     if not all([course_id, title, code]):
         return jsonify({"error": "course_id, title, and code are required"}), 400
@@ -76,6 +76,13 @@ def create_course():
         (course_id, code),
     ):
         return jsonify({"error": "Course ID or code already exists"}), 409
+
+    # If a lecturer is specified, verify they exist before inserting.
+    if lec_id and not query_one(
+        "SELECT UserID FROM Users WHERE UserID = %s AND AccountType = 'Lecturer'",
+        (lec_id,),
+    ):
+        return jsonify({"error": "Lecturer not found"}), 404
 
     course = execute_returning(
         """INSERT INTO Courses (CourseID, CourseTitle, CourseCode, Description, LecID)
@@ -89,9 +96,15 @@ def create_course():
 # ── Student / Lecturer course views ─────────────────────────────────────────
 
 
-@courses_bp.get("/students/<student_id>/courses")
+@courses_bp.route("/students/<student_id>/courses", methods=["GET"])
 @jwt_required()
 def get_student_courses(student_id: str):
+    # Students may only view their own course list; Lecturers and Admins may view any.
+    caller = get_jwt_identity()
+    role   = _role()
+    if role not in ("Admin", "Lecturer") and caller != student_id:
+        return jsonify({"error": "You may only view your own course list"}), 403
+
     courses = query_all(
         """SELECT c.CourseID, c.CourseTitle, c.CourseCode, c.Description,
                   c.LecID, u.Name AS LecturerName, e.EnrolledAt
@@ -105,9 +118,16 @@ def get_student_courses(student_id: str):
     return jsonify(courses), 200
 
 
-@courses_bp.get("/lecturers/<lecturer_id>/courses")
+@courses_bp.route("/lecturers/<lecturer_id>/courses", methods=["GET"])
 @jwt_required()
 def get_lecturer_courses(lecturer_id: str):
+    # Lecturers may only view their own list; Admins may view any lecturer's list.
+    # Students have no access.
+    caller = get_jwt_identity()
+    role   = _role()
+    if role != "Admin" and caller != lecturer_id:
+        return jsonify({"error": "You may only view your own course list"}), 403
+
     courses = query_all(
         """SELECT c.CourseID, c.CourseTitle, c.CourseCode, c.Description,
                   c.CreatedAt, COUNT(e.UserID) AS EnrolledCount
@@ -124,7 +144,7 @@ def get_lecturer_courses(lecturer_id: str):
 # ── Enrolment ────────────────────────────────────────────────────────────────
 
 
-@courses_bp.post("/courses/<course_id>/enroll")
+@courses_bp.route("/courses/<course_id>/enroll", methods=["POST"])
 @jwt_required()
 def enroll_student(course_id: str):
     role    = _role()
@@ -155,6 +175,13 @@ def enroll_student(course_id: str):
     ):
         return jsonify({"error": "Student already enrolled in this course"}), 409
 
+    # Spec constraint: a student may not enroll in more than 6 courses.
+    count_row = query_one(
+        "SELECT COUNT(*) AS cnt FROM Enrolled WHERE UserID = %s", (student_id,)
+    )
+    if count_row and int(count_row["cnt"]) >= 6:
+        return jsonify({"error": "Students may not enroll in more than 6 courses"}), 400
+
     execute(
         "INSERT INTO Enrolled (UserID, CourseID) VALUES (%s, %s)",
         (student_id, course_id),
@@ -162,7 +189,7 @@ def enroll_student(course_id: str):
     return jsonify({"message": f"Student {student_id} enrolled in {course_id}"}), 201
 
 
-@courses_bp.post("/courses/<course_id>/assign-lecturer")
+@courses_bp.route("/courses/<course_id>/assign-lecturer", methods=["POST"])
 @jwt_required()
 def assign_lecturer(course_id: str):
     """Admin only: assign a lecturer to a course."""
@@ -196,9 +223,13 @@ def assign_lecturer(course_id: str):
 # ── Members ──────────────────────────────────────────────────────────────────
 
 
-@courses_bp.get("/courses/<course_id>/members")
+@courses_bp.route("/courses/<course_id>/members", methods=["GET"])
 @jwt_required()
 def get_course_members(course_id: str):
+    # Sensitive — exposes student emails. Restrict to Lecturer and Admin only.
+    if _role() not in ("Lecturer", "Admin"):
+        return jsonify({"error": "Only lecturers and admins can view the course member list"}), 403
+
     course = query_one(
         """SELECT c.CourseID, c.CourseTitle, c.LecID,
                   u.Name AS LecturerName, u.Email AS LecturerEmail

@@ -10,35 +10,61 @@ import hashlib
 
 import bcrypt
 from flask import Blueprint, jsonify, request
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import (
+    create_access_token,
+    get_jwt,
+    verify_jwt_in_request,
+)
 
 from db import execute_returning, query_one
 
 auth_bp = Blueprint("auth", __name__)
 
 
-@auth_bp.post("/register")
+@auth_bp.route("/register", methods=["POST"])
 def register():
+    # Optionally read a JWT so that Admin-account creation can be gated.
+    # The endpoint remains fully public for Student/Lecturer self-registration.
+    verify_jwt_in_request(optional=True)
+
     data = request.get_json(silent=True)
     if not data:
         return jsonify({"error": "JSON body required"}), 400
 
-    user_id     = (data.get("userid") or "").strip()
-    password    = (data.get("password") or "").strip()
-    name        = (data.get("name") or "").strip()
-    email       = (data.get("email") or "").strip()
+    user_id      = (data.get("userid") or "").strip()
+    password     = (data.get("password") or "").strip()
+    name         = (data.get("name") or "").strip()
+    email        = (data.get("email") or "").strip()
     account_type = (data.get("account_type") or "Student").strip()
 
-    if not all([user_id, password, name, email]):
-        return jsonify({"error": "userid, password, name, and email are required"}), 400
+    # ── Required field validation ──────────────────────────────────────────
+    missing = [f for f, v in [("userid", user_id), ("password", password),
+                               ("name", name), ("email", email)] if not v]
+    if missing:
+        return jsonify({"error": f"Required fields missing: {', '.join(missing)}"}), 400
 
     if account_type not in ("Admin", "Lecturer", "Student"):
         return jsonify({"error": "account_type must be Admin, Lecturer, or Student"}), 400
 
-    if len(password) < 6:
-        return jsonify({"error": "password must be at least 6 characters"}), 400
+    # ── Admin-account guard ────────────────────────────────────────────────
+    # Only an already-authenticated Admin may register a new Admin account.
+    if account_type == "Admin":
+        caller_role = get_jwt().get("role", "") if get_jwt() else ""
+        if caller_role != "Admin":
+            return jsonify({
+                "error": "Only an existing Admin can register an Admin account. "
+                         "Authenticate as an Admin and include your Bearer token."
+            }), 403
 
-    # Reject if user ID or email already taken
+    # ── Password strength ─────────────────────────────────────────────────
+    if len(password) < 6:
+        return jsonify({"error": "password must be at least 6 characters long"}), 400
+
+    # ── Basic email format check ──────────────────────────────────────────
+    if "@" not in email or "." not in email.split("@")[-1]:
+        return jsonify({"error": "A valid email address is required"}), 400
+
+    # ── Uniqueness check ──────────────────────────────────────────────────
     existing = query_one(
         "SELECT UserID FROM Users WHERE UserID = %s OR Email = %s",
         (user_id, email),
@@ -57,7 +83,7 @@ def register():
     return jsonify({"message": "User registered successfully", "user": user}), 201
 
 
-@auth_bp.post("/login")
+@auth_bp.route("/login", methods=["POST"])
 def login():
     data = request.get_json(silent=True)
     if not data:
@@ -66,8 +92,10 @@ def login():
     identifier = (data.get("userid") or data.get("email") or "").strip()
     password   = (data.get("password") or "").strip()
 
-    if not identifier or not password:
-        return jsonify({"error": "userid (or email) and password are required"}), 400
+    if not identifier:
+        return jsonify({"error": "userid or email is required"}), 400
+    if not password:
+        return jsonify({"error": "password is required"}), 400
 
     user = query_one(
         "SELECT UserID, Password, Name, Email, AccountType FROM Users WHERE UserID = %s OR Email = %s",

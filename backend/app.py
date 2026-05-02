@@ -61,7 +61,7 @@ def create_app() -> Flask:
     app.register_blueprint(reports_bp,      url_prefix="/api/reports")
 
     # ── Health check ────────────────────────────────────────────────────────
-    @app.get("/api/health")
+    @app.route("/api/health", methods=["GET"])
     def health():
         return jsonify({"status": "ok"})
 

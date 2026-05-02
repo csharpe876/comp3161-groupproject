@@ -29,61 +29,76 @@ export default function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-indigo-50 flex items-center justify-center px-4">
-      <div className="bg-white rounded-xl shadow-lg p-8 w-full max-w-sm">
-        <h1 className="text-2xl font-bold text-indigo-700 mb-6 text-center">
-          Course Management System
-        </h1>
-
-        {error && (
-          <div className="bg-red-50 border border-red-300 text-red-700 rounded p-3 mb-4 text-sm">
-            {error}
+    <div className="min-h-screen bg-neutral-50 flex">
+      {/* Left hero panel */}
+      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-secondary to-secondary-700
+                      flex-col items-center justify-center px-16 text-white">
+        <div className="max-w-xs text-center">
+          <div className="text-5xl font-extrabold mb-4">
+            <span className="text-primary">E</span>Tutor
           </div>
-        )}
+          <p className="text-secondary-100 text-base leading-relaxed">
+            Your all-in-one learning management platform.
+          </p>
+        </div>
+      </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              User ID or Email
-            </label>
-            <input
-              type="text"
-              value={userid}
-              onChange={(e) => setUserid(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-              placeholder="e.g. S1, L1, or user@uwi.edu"
-            />
+      {/* Right form panel */}
+      <div className="flex flex-1 items-center justify-center px-6 py-12">
+        <div className="w-full max-w-sm">
+          <div className="mb-8 text-center">
+            <h1 className="text-2xl font-bold text-neutral-900">Welcome back</h1>
+            <p className="mt-1 text-sm text-neutral-400">Sign in to continue to ETutor</p>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
-            />
-          </div>
+          {error && (
+            <div className="flex items-start gap-2 bg-red-50 border border-red-200
+                            text-error rounded-xl px-4 py-3 mb-5 text-sm">
+              {error}
+            </div>
+          )}
 
-          <button
-            type="submit"
-            disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-700 disabled:opacity-50 text-white font-medium py-2 rounded transition-colors"
-          >
-            {loading ? 'Signing in…' : 'Sign in'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <div>
+              <label className="input-label">User ID or Email</label>
+              <input
+                type="text"
+                value={userid}
+                onChange={(e) => setUserid(e.target.value)}
+                required
+                className="input-field"
+                placeholder="e.g. S1, L1, or user@uwi.edu"
+              />
+            </div>
 
-        <p className="mt-4 text-center text-sm text-gray-600">
-          No account?{' '}
-          <Link to="/register" className="text-indigo-600 hover:underline">
-            Register
-          </Link>
-        </p>
+            <div>
+              <label className="input-label">Password</label>
+              <input
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="input-field"
+                placeholder="••••••••"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="btn-primary w-full"
+            >
+              {loading ? 'Signing in…' : 'Sign in'}
+            </button>
+          </form>
+
+          <p className="mt-6 text-center text-sm text-neutral-400">
+            No account?{' '}
+            <Link to="/register" className="font-semibold text-primary hover:text-primary-600 no-underline">
+              Register
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )
