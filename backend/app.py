@@ -6,6 +6,8 @@ from __future__ import annotations
 import decimal
 from datetime import date, datetime, time
 
+import os
+
 from flask import Flask, jsonify
 from flask.json.provider import DefaultJSONProvider
 from flask_cors import CORS
@@ -37,7 +39,10 @@ def create_app() -> Flask:
     app.config["JWT_ACCESS_TOKEN_EXPIRES"] = Config.JWT_ACCESS_TOKEN_EXPIRES
     app.config["DEBUG"] = Config.DEBUG
 
-    CORS(app, resources={r"/api/*": {"origins": "*"}})
+    # In production set ALLOWED_ORIGINS to the exact front-end origin,
+    # e.g. "https://yourdomain.com". Defaults to "*" only for local dev.
+    _allowed = os.environ.get("ALLOWED_ORIGINS", "*").split(",")
+    CORS(app, resources={r"/api/*": {"origins": _allowed}})
     JWTManager(app)
 
     # Initialise DB connection pool

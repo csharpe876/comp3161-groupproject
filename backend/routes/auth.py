@@ -1,5 +1,5 @@
 """
-Authentication routes: register and login.
+Authentication controller: register and login.
 Passwords for API-registered users are hashed with bcrypt.
 Seeded test users (from insertdata.py) use SHA-256; the login endpoint
 falls back to SHA-256 verification so both work.
@@ -16,7 +16,7 @@ from flask_jwt_extended import (
     verify_jwt_in_request,
 )
 
-from db import execute_returning, query_one
+from models import user as user_model
 
 auth_bp = Blueprint("auth", __name__)
 
@@ -64,22 +64,12 @@ def register():
     if "@" not in email or "." not in email.split("@")[-1]:
         return jsonify({"error": "A valid email address is required"}), 400
 
-    # ── Uniqueness check ──────────────────────────────────────────────────
-    existing = query_one(
-        "SELECT UserID FROM Users WHERE UserID = %s OR Email = %s",
-        (user_id, email),
-    )
-    if existing:
+    # ── Uniqueness check (delegated to model) ─────────────────────────────
+    if user_model.find_duplicate(user_id, email):
         return jsonify({"error": "A user with that ID or email already exists"}), 409
 
     hashed = bcrypt.hashpw(password.encode(), bcrypt.gensalt()).decode()
-
-    user = execute_returning(
-        """INSERT INTO Users (UserID, Password, Name, Email, AccountType)
-           VALUES (%s, %s, %s, %s, %s)
-           RETURNING UserID, Name, Email, AccountType, CreatedAt""",
-        (user_id, hashed, name, email, account_type),
-    )
+    user = user_model.create(user_id, hashed, name, email, account_type)
     return jsonify({"message": "User registered successfully", "user": user}), 201
 
 
@@ -97,12 +87,9 @@ def login():
     if not password:
         return jsonify({"error": "password is required"}), 400
 
-    user = query_one(
-        "SELECT UserID, Password, Name, Email, AccountType FROM Users WHERE UserID = %s OR Email = %s",
-        (identifier, identifier),
-    )
+    user = user_model.find_by_identifier(identifier)
 
-    # Use a constant-time failure path to prevent timing attacks
+    # Constant-time failure path to prevent timing attacks
     if not user:
         bcrypt.checkpw(b"dummy", bcrypt.hashpw(b"guard", bcrypt.gensalt()))
         return jsonify({"error": "Invalid credentials"}), 401

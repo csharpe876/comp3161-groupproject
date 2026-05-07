@@ -1,12 +1,13 @@
 """
-Report routes — each endpoint queries one of the five materialised views.
+Reports controller — HTTP handlers for the five Admin report views.
+All data-access logic lives in models.report.
 """
 from __future__ import annotations
 
 from flask import Blueprint, jsonify
 from flask_jwt_extended import get_jwt, jwt_required
 
-from db import query_all
+from models import report as report_model
 
 reports_bp = Blueprint("reports", __name__)
 
@@ -25,7 +26,7 @@ def courses_50plus():
     err = _require_staff()
     if err:
         return err
-    return jsonify(query_all("SELECT * FROM v_courses_50plus_students")), 200
+    return jsonify(report_model.courses_50plus()), 200
 
 
 @reports_bp.route("/students-5plus", methods=["GET"])
@@ -35,7 +36,7 @@ def students_5plus():
     err = _require_staff()
     if err:
         return err
-    return jsonify(query_all("SELECT * FROM v_students_5plus_courses")), 200
+    return jsonify(report_model.students_5plus()), 200
 
 
 @reports_bp.route("/lecturers-3plus", methods=["GET"])
@@ -45,7 +46,7 @@ def lecturers_3plus():
     err = _require_staff()
     if err:
         return err
-    return jsonify(query_all("SELECT * FROM v_lecturers_3plus_courses")), 200
+    return jsonify(report_model.lecturers_3plus()), 200
 
 
 @reports_bp.route("/top10-enrolled", methods=["GET"])
@@ -55,7 +56,7 @@ def top10_enrolled():
     err = _require_staff()
     if err:
         return err
-    return jsonify(query_all("SELECT * FROM v_top10_most_enrolled")), 200
+    return jsonify(report_model.top10_enrolled()), 200
 
 
 @reports_bp.route("/top10-averages", methods=["GET"])
@@ -65,4 +66,4 @@ def top10_averages():
     err = _require_staff()
     if err:
         return err
-    return jsonify(query_all("SELECT * FROM v_top10_student_averages")), 200
+    return jsonify(report_model.top10_averages()), 200

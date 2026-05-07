@@ -1,5 +1,6 @@
 """
-Calendar event routes.
+Calendar controller — HTTP handlers for course and student calendar events.
+All data-access logic lives in models.calendar and models.course.
 """
 from __future__ import annotations
 
@@ -8,7 +9,8 @@ from datetime import datetime
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 
-from db import execute_returning, query_all, query_one
+from models import calendar as calendar_model
+from models import course as course_model
 
 calendar_bp = Blueprint("calendar", __name__)
 
@@ -17,20 +19,9 @@ calendar_bp = Blueprint("calendar", __name__)
 @jwt_required()
 def get_course_events(course_id: str):
     """Return all calendar events for a course, ordered chronologically."""
-    if not query_one("SELECT CourseID FROM Courses WHERE CourseID = %s", (course_id,)):
+    if not course_model.get_by_id(course_id):
         return jsonify({"error": "Course not found"}), 404
-
-    events = query_all(
-        """SELECT e.EventID, e.CourseID, e.Title, e.Description,
-                  e.EventDate, e.EventTime, e.CreatedBy,
-                  u.Name AS CreatedByName, e.CreatedAt
-           FROM CalendarEvents e
-           LEFT JOIN Users u ON e.CreatedBy = u.UserID
-           WHERE e.CourseID = %s
-           ORDER BY e.EventDate, e.EventTime NULLS LAST""",
-        (course_id,),
-    )
-    return jsonify(events), 200
+    return jsonify(calendar_model.get_events_for_course(course_id)), 200
 
 
 @calendar_bp.route("/courses/<course_id>/events", methods=["POST"])
@@ -41,7 +32,7 @@ def create_course_event(course_id: str):
     if role not in ("Lecturer", "Admin"):
         return jsonify({"error": "Only lecturers and admins can create events"}), 403
 
-    course = query_one("SELECT CourseID, LecID FROM Courses WHERE CourseID = %s", (course_id,))
+    course = course_model.get_by_id(course_id)
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
@@ -80,14 +71,8 @@ def create_course_event(course_id: str):
         if not valid_time:
             return jsonify({"error": "event_time must be in HH:MM or HH:MM:SS format"}), 400
 
-    created_by = get_jwt_identity()
-    event = execute_returning(
-        """INSERT INTO CalendarEvents
-               (CourseID, Title, Description, EventDate, EventTime, CreatedBy)
-           VALUES (%s, %s, %s, %s, %s, %s)
-           RETURNING EventID, CourseID, Title, Description,
-                     EventDate, EventTime, CreatedBy, CreatedAt""",
-        (course_id, title, description, event_date, event_time, created_by),
+    event = calendar_model.create_event(
+        course_id, title, description, event_date, event_time, get_jwt_identity()
     )
     return jsonify(event), 201
 
@@ -99,7 +84,6 @@ def get_student_events_by_date(student_id: str):
 
     Query parameter: ?date=YYYY-MM-DD  (required)
     """
-    # Students may only view their own calendar; Lecturers and Admins may view any.
     caller = get_jwt_identity()
     role   = get_jwt().get("role", "")
     if role not in ("Admin", "Lecturer") and caller != student_id:
@@ -109,20 +93,12 @@ def get_student_events_by_date(student_id: str):
     if not event_date:
         return jsonify({"error": "Query parameter ?date=YYYY-MM-DD is required"}), 400
 
-    # Validate date format before passing to the database.
     try:
         datetime.strptime(event_date, "%Y-%m-%d")
     except ValueError:
         return jsonify({"error": "date must be in YYYY-MM-DD format"}), 400
 
-    events = query_all(
-        """SELECT e.EventID, e.CourseID, c.CourseTitle, c.CourseCode,
-                  e.Title, e.Description, e.EventDate, e.EventTime, e.CreatedAt
-           FROM CalendarEvents e
-           JOIN Courses c  ON e.CourseID  = c.CourseID
-           JOIN Enrolled en ON c.CourseID = en.CourseID AND en.UserID = %s
-           WHERE e.EventDate = %s
-           ORDER BY e.EventTime NULLS LAST""",
-        (student_id, event_date),
-    )
+    events = calendar_model.get_student_events_for_date(student_id, event_date)
     return jsonify(events), 200
+
+

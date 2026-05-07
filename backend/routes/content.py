@@ -1,12 +1,14 @@
 """
-Course content routes: sections and content items (links, files, slides).
+Content controller — HTTP handlers for course sections and content items.
+All data-access logic lives in models.content.
 """
 from __future__ import annotations
 
 from flask import Blueprint, jsonify, request
 from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 
-from db import execute_returning, query_all, query_one
+from models import content as content_model
+from models import course as course_model
 
 content_bp = Blueprint("content", __name__)
 
@@ -15,30 +17,10 @@ content_bp = Blueprint("content", __name__)
 @jwt_required()
 def get_course_content(course_id: str):
     """Return all sections for a course, each with their content items."""
-    course = query_one(
-        "SELECT CourseID, CourseTitle FROM Courses WHERE CourseID = %s", (course_id,)
-    )
+    course = course_model.get_by_id(course_id)
     if not course:
         return jsonify({"error": "Course not found"}), 404
-
-    sections = query_all(
-        """SELECT SectionID, SectionName, OrderIndex, CreatedAt
-           FROM ContentSections
-           WHERE CourseID = %s
-           ORDER BY OrderIndex, CreatedAt""",
-        (course_id,),
-    )
-
-    for sec in sections:
-        sec["content"] = query_all(
-            """SELECT ContentID, SectionID, Title, ContentType,
-                      ContentURL, Description, CreatedAt
-               FROM CourseContent
-               WHERE SectionID = %s
-               ORDER BY CreatedAt""",
-            (sec["sectionid"],),
-        )
-
+    sections = content_model.get_sections_for_course(course_id)
     return jsonify({"course": course, "sections": sections}), 200
 
 
@@ -50,7 +32,7 @@ def create_section(course_id: str):
     if role not in ("Lecturer", "Admin"):
         return jsonify({"error": "Only lecturers and admins can add sections"}), 403
 
-    course = query_one("SELECT CourseID, LecID FROM Courses WHERE CourseID = %s", (course_id,))
+    course = course_model.get_by_id(course_id)
     if not course:
         return jsonify({"error": "Course not found"}), 404
 
@@ -73,12 +55,7 @@ def create_section(course_id: str):
     if not section_name:
         return jsonify({"error": "section_name is required"}), 400
 
-    section = execute_returning(
-        """INSERT INTO ContentSections (CourseID, SectionName, OrderIndex)
-           VALUES (%s, %s, %s)
-           RETURNING SectionID, CourseID, SectionName, OrderIndex, CreatedAt""",
-        (course_id, section_name, order_index),
-    )
+    section = content_model.create_section(course_id, section_name, order_index)
     return jsonify(section), 201
 
 
@@ -90,21 +67,12 @@ def add_content_item(section_id: int):
     if role not in ("Lecturer", "Admin"):
         return jsonify({"error": "Only lecturers and admins can add content"}), 403
 
-    section = query_one(
-        "SELECT SectionID FROM ContentSections WHERE SectionID = %s", (section_id,)
-    )
-    if not section:
+    if not content_model.get_section_by_id(section_id):
         return jsonify({"error": "Section not found"}), 404
 
     # Lecturers may only add content to sections in courses they teach.
     if role == "Lecturer":
-        course_row = query_one(
-            """SELECT c.LecID
-               FROM ContentSections cs
-               JOIN Courses c ON cs.CourseID = c.CourseID
-               WHERE cs.SectionID = %s""",
-            (section_id,),
-        )
+        course_row = content_model.get_section_with_course(section_id)
         if not course_row or course_row["lecid"] != get_jwt_identity():
             return jsonify({"error": "You do not teach the course this section belongs to"}), 403
 
@@ -127,12 +95,7 @@ def add_content_item(section_id: int):
     if not content_url.lower().startswith(("https://", "http://")):
         return jsonify({"error": "content_url must begin with https:// or http://"}), 400
 
-    item = execute_returning(
-        """INSERT INTO CourseContent
-               (SectionID, Title, ContentType, ContentURL, Description)
-           VALUES (%s, %s, %s, %s, %s)
-           RETURNING ContentID, SectionID, Title, ContentType,
-                     ContentURL, Description, CreatedAt""",
-        (section_id, title, content_type, content_url, description),
-    )
+    item = content_model.add_item(section_id, title, content_type, content_url, description)
     return jsonify(item), 201
+
+
