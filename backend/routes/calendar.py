@@ -12,10 +12,10 @@ from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from models import calendar as calendar_model
 from models import course as course_model
 
-calendar_bp = Blueprint("calendar", __name__)
+api = Blueprint("calendar", __name__)
 
 
-@calendar_bp.route("/courses/<course_id>/events", methods=["GET"])
+@api.route("/courses/<course_id>/events", methods=["GET"])
 @jwt_required()
 def get_course_events(course_id: str):
     """Return all calendar events for a course, ordered chronologically."""
@@ -24,7 +24,7 @@ def get_course_events(course_id: str):
     return jsonify(calendar_model.get_events_for_course(course_id)), 200
 
 
-@calendar_bp.route("/courses/<course_id>/events", methods=["POST"])
+@api.route("/courses/<course_id>/events", methods=["POST"])
 @jwt_required()
 def create_course_event(course_id: str):
     """Lecturer or Admin: create a calendar event for a course."""
@@ -77,7 +77,7 @@ def create_course_event(course_id: str):
     return jsonify(event), 201
 
 
-@calendar_bp.route("/students/<student_id>/events", methods=["GET"])
+@api.route("/students/<student_id>/events", methods=["GET"])
 @jwt_required()
 def get_student_events_by_date(student_id: str):
     """Return all events for a specific date across a student's enrolled courses.

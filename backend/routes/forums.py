@@ -10,13 +10,13 @@ from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from models import forum as forum_model
 from models import course as course_model
 
-forums_bp = Blueprint("forums", __name__)
+api = Blueprint("forums", __name__)
 
 
 # ── Forums ────────────────────────────────────────────────────────────────────
 
 
-@forums_bp.route("/courses/<course_id>/forums", methods=["GET"])
+@api.route("/courses/<course_id>/forums", methods=["GET"])
 @jwt_required()
 def get_course_forums(course_id: str):
     if not course_model.get_by_id(course_id):
@@ -24,7 +24,7 @@ def get_course_forums(course_id: str):
     return jsonify(forum_model.get_all_for_course(course_id)), 200
 
 
-@forums_bp.route("/courses/<course_id>/forums", methods=["POST"])
+@api.route("/courses/<course_id>/forums", methods=["POST"])
 @jwt_required()
 def create_forum(course_id: str):
     role = get_jwt().get("role", "")
@@ -51,7 +51,7 @@ def create_forum(course_id: str):
 # ── Threads ───────────────────────────────────────────────────────────────────
 
 
-@forums_bp.route("/forums/<int:forum_id>/threads", methods=["GET"])
+@api.route("/forums/<int:forum_id>/threads", methods=["GET"])
 @jwt_required()
 def get_forum_threads(forum_id: int):
     forum = forum_model.get_by_id(forum_id)
@@ -61,7 +61,7 @@ def get_forum_threads(forum_id: int):
     return jsonify({"forum": forum, "threads": threads}), 200
 
 
-@forums_bp.route("/forums/<int:forum_id>/threads", methods=["POST"])
+@api.route("/forums/<int:forum_id>/threads", methods=["POST"])
 @jwt_required()
 def create_thread(forum_id: int):
     if not forum_model.get_by_id(forum_id):
@@ -81,7 +81,7 @@ def create_thread(forum_id: int):
     return jsonify(thread), 201
 
 
-@forums_bp.route("/threads/<int:thread_id>", methods=["GET"])
+@api.route("/threads/<int:thread_id>", methods=["GET"])
 @jwt_required()
 def get_thread(thread_id: int):
     """Return the thread and its full reply tree (depth-first via CTE)."""
@@ -95,7 +95,7 @@ def get_thread(thread_id: int):
 # ── Replies ───────────────────────────────────────────────────────────────────
 
 
-@forums_bp.route("/threads/<int:thread_id>/replies", methods=["POST"])
+@api.route("/threads/<int:thread_id>/replies", methods=["POST"])
 @jwt_required()
 def reply_to_thread(thread_id: int):
     """Direct reply to a thread (ParentReplyID = NULL)."""
@@ -114,7 +114,7 @@ def reply_to_thread(thread_id: int):
     return jsonify(reply), 201
 
 
-@forums_bp.route("/replies/<int:reply_id>/replies", methods=["POST"])
+@api.route("/replies/<int:reply_id>/replies", methods=["POST"])
 @jwt_required()
 def reply_to_reply(reply_id: int):
     """Nested reply to an existing reply."""

@@ -9,7 +9,7 @@ from flask_jwt_extended import get_jwt, jwt_required
 
 from models import report as report_model
 
-reports_bp = Blueprint("reports", __name__)
+api = Blueprint("reports", __name__)
 
 
 def _require_staff():
@@ -19,7 +19,7 @@ def _require_staff():
     return None
 
 
-@reports_bp.route("/courses-50plus", methods=["GET"])
+@api.route("/courses-50plus", methods=["GET"])
 @jwt_required()
 def courses_50plus():
     """All courses with 50 or more enrolled students."""
@@ -29,7 +29,7 @@ def courses_50plus():
     return jsonify(report_model.courses_50plus()), 200
 
 
-@reports_bp.route("/students-5plus", methods=["GET"])
+@api.route("/students-5plus", methods=["GET"])
 @jwt_required()
 def students_5plus():
     """All students enrolled in 5 or more courses."""
@@ -39,7 +39,7 @@ def students_5plus():
     return jsonify(report_model.students_5plus()), 200
 
 
-@reports_bp.route("/lecturers-3plus", methods=["GET"])
+@api.route("/lecturers-3plus", methods=["GET"])
 @jwt_required()
 def lecturers_3plus():
     """All lecturers who teach 3 or more courses."""
@@ -49,7 +49,7 @@ def lecturers_3plus():
     return jsonify(report_model.lecturers_3plus()), 200
 
 
-@reports_bp.route("/top10-enrolled", methods=["GET"])
+@api.route("/top10-enrolled", methods=["GET"])
 @jwt_required()
 def top10_enrolled():
     """The 10 most enrolled courses."""
@@ -59,7 +59,7 @@ def top10_enrolled():
     return jsonify(report_model.top10_enrolled()), 200
 
 
-@reports_bp.route("/top10-averages", methods=["GET"])
+@api.route("/top10-averages", methods=["GET"])
 @jwt_required()
 def top10_averages():
     """Top 10 students by overall grade average."""

@@ -10,10 +10,10 @@ from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from models import content as content_model
 from models import course as course_model
 
-content_bp = Blueprint("content", __name__)
+api = Blueprint("content", __name__)
 
 
-@content_bp.route("/courses/<course_id>/content", methods=["GET"])
+@api.route("/courses/<course_id>/content", methods=["GET"])
 @jwt_required()
 def get_course_content(course_id: str):
     """Return all sections for a course, each with their content items."""
@@ -24,7 +24,7 @@ def get_course_content(course_id: str):
     return jsonify({"course": course, "sections": sections}), 200
 
 
-@content_bp.route("/courses/<course_id>/sections", methods=["POST"])
+@api.route("/courses/<course_id>/sections", methods=["POST"])
 @jwt_required()
 def create_section(course_id: str):
     """Lecturer or Admin: add a new section to a course."""
@@ -59,7 +59,7 @@ def create_section(course_id: str):
     return jsonify(section), 201
 
 
-@content_bp.route("/sections/<int:section_id>/content", methods=["POST"])
+@api.route("/sections/<int:section_id>/content", methods=["POST"])
 @jwt_required()
 def add_content_item(section_id: int):
     """Lecturer or Admin: add a content item to a section."""

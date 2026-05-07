@@ -13,13 +13,13 @@ from models import assignment as assignment_model
 from models import course as course_model
 from models import user as user_model
 
-assignments_bp = Blueprint("assignments", __name__)
+api = Blueprint("assignments", __name__)
 
 
 # ── Assignments ───────────────────────────────────────────────────────────────
 
 
-@assignments_bp.route("/courses/<course_id>/assignments", methods=["GET"])
+@api.route("/courses/<course_id>/assignments", methods=["GET"])
 @jwt_required()
 def get_course_assignments(course_id: str):
     if not course_model.get_by_id(course_id):
@@ -27,7 +27,17 @@ def get_course_assignments(course_id: str):
     return jsonify(assignment_model.get_all_for_course(course_id)), 200
 
 
-@assignments_bp.route("/courses/<course_id>/assignments", methods=["POST"])
+@api.route("/assignments/<int:assignment_id>", methods=["GET"])
+@jwt_required()
+def get_assignment(assignment_id: int):
+    """Return full details for a single assignment."""
+    assignment = assignment_model.get_full_by_id(assignment_id)
+    if not assignment:
+        return jsonify({"error": "Assignment not found"}), 404
+    return jsonify(assignment), 200
+
+
+@api.route("/courses/<course_id>/assignments", methods=["POST"])
 @jwt_required()
 def create_assignment(course_id: str):
     role = get_jwt().get("role", "")
@@ -80,7 +90,7 @@ def create_assignment(course_id: str):
 # ── Submissions ───────────────────────────────────────────────────────────────
 
 
-@assignments_bp.route("/assignments/<int:assignment_id>/submit", methods=["POST"])
+@api.route("/assignments/<int:assignment_id>/submit", methods=["POST"])
 @jwt_required()
 def submit_assignment(assignment_id: int):
     role = get_jwt().get("role", "")
@@ -112,7 +122,7 @@ def submit_assignment(assignment_id: int):
     return jsonify(submission), 201
 
 
-@assignments_bp.route("/assignments/<int:assignment_id>/submissions", methods=["GET"])
+@api.route("/assignments/<int:assignment_id>/submissions", methods=["GET"])
 @jwt_required()
 def get_submissions(assignment_id: int):
     """
@@ -136,7 +146,7 @@ def get_submissions(assignment_id: int):
 # ── Grading ───────────────────────────────────────────────────────────────────
 
 
-@assignments_bp.route("/submissions/<int:submission_id>/grade", methods=["POST"])
+@api.route("/submissions/<int:submission_id>/grade", methods=["POST"])
 @jwt_required()
 def grade_submission(submission_id: int):
     role = get_jwt().get("role", "")
@@ -172,7 +182,7 @@ def grade_submission(submission_id: int):
     return jsonify(result), 200
 
 
-@assignments_bp.route("/students/<student_id>/average", methods=["GET"])
+@api.route("/students/<student_id>/average", methods=["GET"])
 @jwt_required()
 def get_student_average(student_id: str):
     """Return the overall grade average (as a percentage) for a student."""
@@ -186,3 +196,20 @@ def get_student_average(student_id: str):
 
     average = assignment_model.get_student_average(student_id)
     return jsonify({"student_id": student_id, "overall_average": average}), 200
+
+
+@api.route("/students/<student_id>/grades", methods=["GET"])
+@jwt_required()
+def get_student_grades(student_id: str):
+    """Return all graded submissions for a student (grade book)."""
+    caller = get_jwt_identity()
+    role   = get_jwt().get("role", "")
+    if role not in ("Admin", "Lecturer") and caller != student_id:
+        return jsonify({"error": "You may only view your own grades"}), 403
+
+    if not user_model.find_by_id_and_type(student_id, "Student"):
+        return jsonify({"error": "Student not found"}), 404
+
+    grades  = assignment_model.get_student_grades(student_id)
+    average = assignment_model.get_student_average(student_id)
+    return jsonify({"student_id": student_id, "overall_average": average, "grades": grades}), 200

@@ -49,21 +49,21 @@ def create_app() -> Flask:
     init_pool()
 
     # ── Blueprints ──────────────────────────────────────────────────────────
-    from routes.auth import auth_bp
-    from routes.courses import courses_bp
-    from routes.calendar import calendar_bp
-    from routes.forums import forums_bp
-    from routes.content import content_bp
-    from routes.assignments import assignments_bp
-    from routes.reports import reports_bp
+    from routes.auth import api as auth_api
+    from routes.courses import api as courses_api
+    from routes.calendar import api as calendar_api
+    from routes.forums import api as forums_api
+    from routes.content import api as content_api
+    from routes.assignments import api as assignments_api
+    from routes.reports import api as reports_api
 
-    app.register_blueprint(auth_bp,         url_prefix="/api/auth")
-    app.register_blueprint(courses_bp,      url_prefix="/api")
-    app.register_blueprint(calendar_bp,     url_prefix="/api")
-    app.register_blueprint(forums_bp,       url_prefix="/api")
-    app.register_blueprint(content_bp,      url_prefix="/api")
-    app.register_blueprint(assignments_bp,  url_prefix="/api")
-    app.register_blueprint(reports_bp,      url_prefix="/api/reports")
+    app.register_blueprint(auth_api,        url_prefix="/api/auth")
+    app.register_blueprint(courses_api,     url_prefix="/api")
+    app.register_blueprint(calendar_api,    url_prefix="/api")
+    app.register_blueprint(forums_api,      url_prefix="/api")
+    app.register_blueprint(content_api,     url_prefix="/api")
+    app.register_blueprint(assignments_api, url_prefix="/api")
+    app.register_blueprint(reports_api,     url_prefix="/api/reports")
 
     # ── Health check ────────────────────────────────────────────────────────
     @app.route("/api/health", methods=["GET"])

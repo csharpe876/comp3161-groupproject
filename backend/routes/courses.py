@@ -10,7 +10,7 @@ from flask_jwt_extended import get_jwt, get_jwt_identity, jwt_required
 from models import course as course_model
 from models import user as user_model
 
-courses_bp = Blueprint("courses", __name__)
+api = Blueprint("courses", __name__)
 
 
 def _role() -> str:
@@ -20,13 +20,13 @@ def _role() -> str:
 # ── List / Create courses ────────────────────────────────────────────────────
 
 
-@courses_bp.route("/courses", methods=["GET"])
+@api.route("/courses", methods=["GET"])
 def get_all_courses():
     """Public: list every course."""
     return jsonify(course_model.get_all()), 200
 
 
-@courses_bp.route("/courses/<course_id>", methods=["GET"])
+@api.route("/courses/<course_id>", methods=["GET"])
 @jwt_required()
 def get_course(course_id: str):
     course = course_model.get_by_id(course_id)
@@ -35,7 +35,7 @@ def get_course(course_id: str):
     return jsonify(course), 200
 
 
-@courses_bp.route("/courses", methods=["POST"])
+@api.route("/courses", methods=["POST"])
 @jwt_required()
 def create_course():
     """Admin only: create a new course."""
@@ -69,7 +69,7 @@ def create_course():
 # ── Student / Lecturer course views ─────────────────────────────────────────
 
 
-@courses_bp.route("/students/<student_id>/courses", methods=["GET"])
+@api.route("/students/<student_id>/courses", methods=["GET"])
 @jwt_required()
 def get_student_courses(student_id: str):
     # Students may only view their own course list; Lecturers and Admins may view any.
@@ -80,7 +80,7 @@ def get_student_courses(student_id: str):
     return jsonify(course_model.get_for_student(student_id)), 200
 
 
-@courses_bp.route("/lecturers/<lecturer_id>/courses", methods=["GET"])
+@api.route("/lecturers/<lecturer_id>/courses", methods=["GET"])
 @jwt_required()
 def get_lecturer_courses(lecturer_id: str):
     # Lecturers may only view their own list; Admins may view any lecturer's list.
@@ -94,7 +94,7 @@ def get_lecturer_courses(lecturer_id: str):
 # ── Enrolment ────────────────────────────────────────────────────────────────
 
 
-@courses_bp.route("/courses/<course_id>/enroll", methods=["POST"])
+@api.route("/courses/<course_id>/enroll", methods=["POST"])
 @jwt_required()
 def enroll_student(course_id: str):
     role    = _role()
@@ -127,7 +127,7 @@ def enroll_student(course_id: str):
     return jsonify({"message": f"Student {student_id} enrolled in {course_id}"}), 201
 
 
-@courses_bp.route("/courses/<course_id>/assign-lecturer", methods=["POST"])
+@api.route("/courses/<course_id>/assign-lecturer", methods=["POST"])
 @jwt_required()
 def assign_lecturer(course_id: str):
     """Admin only: assign a lecturer to a course."""
@@ -152,7 +152,7 @@ def assign_lecturer(course_id: str):
     return jsonify({"message": f"Lecturer {lec_id} assigned to {course_id}"}), 200
 
 
-@courses_bp.route("/courses/<course_id>/members", methods=["GET"])
+@api.route("/courses/<course_id>/members", methods=["GET"])
 @jwt_required()
 def get_course_members(course_id: str):
     # Sensitive — exposes student emails. Restrict to Lecturer and Admin only.

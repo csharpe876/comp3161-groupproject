@@ -18,10 +18,10 @@ from flask_jwt_extended import (
 
 from models import user as user_model
 
-auth_bp = Blueprint("auth", __name__)
+api = Blueprint("auth", __name__)
 
 
-@auth_bp.route("/register", methods=["POST"])
+@api.route("/register", methods=["POST"])
 def register():
     # Optionally read a JWT so that Admin-account creation can be gated.
     # The endpoint remains fully public for Student/Lecturer self-registration.
@@ -73,7 +73,7 @@ def register():
     return jsonify({"message": "User registered successfully", "user": user}), 201
 
 
-@auth_bp.route("/login", methods=["POST"])
+@api.route("/login", methods=["POST"])
 def login():
     data = request.get_json(silent=True)
     if not data:

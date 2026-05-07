@@ -74,28 +74,41 @@ export default function ThreadDetail() {
 
   return (
     <div>
-      <Link
-        to={`/courses/${courseId}/forums/${forumId}`}
-        className="inline-flex items-center gap-1 text-sm text-neutral-400
-                   hover:text-primary transition-colors no-underline"
-      >
-        ← Back to forum
-      </Link>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-xs text-neutral-400 mb-5">
+        <Link to="/" className="hover:text-primary no-underline transition-colors">Dashboard</Link>
+        <span>/</span>
+        <Link to={`/courses/${courseId}`} className="hover:text-primary no-underline transition-colors">
+          Course
+        </Link>
+        <span>/</span>
+        <Link to={`/courses/${courseId}/forums/${forumId}`} className="hover:text-primary no-underline transition-colors">
+          Forum
+        </Link>
+        <span>/</span>
+        <span className="text-neutral-700 font-medium truncate max-w-xs">{thread.title}</span>
+      </nav>
 
       {/* Original post */}
-      <div className="mt-4 card">
-        <h1 className="text-xl font-bold text-neutral-900 mb-1">{thread.title}</h1>
-        <p className="text-xs text-neutral-400 mb-4">
-          by {thread.authorname} · {new Date(thread.createdat).toLocaleString()}
-        </p>
-        <p className="text-sm text-neutral-700 whitespace-pre-wrap leading-relaxed">
+      <div className="bg-secondary rounded-2xl p-6 mb-6 text-white">
+        <h1 className="text-xl font-bold text-white mb-2">{thread.title}</h1>
+        <div className="flex items-center gap-2 mb-4">
+          <div className="w-7 h-7 rounded-full bg-white/20 flex items-center justify-center
+                          text-white text-xs font-bold">
+            {thread.authorname.charAt(0).toUpperCase()}
+          </div>
+          <span className="text-white/70 text-sm">
+            {thread.authorname} &middot; {new Date(thread.createdat).toLocaleString()}
+          </span>
+        </div>
+        <p className="text-white/85 text-sm whitespace-pre-wrap leading-relaxed">
           {thread.content}
         </p>
       </div>
 
       {/* Reply tree */}
-      <div className="mt-6">
-        <h2 className="text-sm font-semibold text-neutral-500 mb-3">
+      <div className="mb-6">
+        <h2 className="text-xs font-semibold text-neutral-400 uppercase tracking-wide mb-3">
           {replies.length} {replies.length === 1 ? 'reply' : 'replies'}
         </h2>
         {replies.map((r) => (
@@ -105,8 +118,8 @@ export default function ThreadDetail() {
 
       {/* Reply form */}
       {msg && <p className="text-success text-sm mt-4 font-medium">{msg}</p>}
-      <form onSubmit={handleReply} className="mt-6 card space-y-3">
-        <h3 className="font-semibold text-neutral-800">Add a reply</h3>
+      <form onSubmit={handleReply} className="mt-4 bg-white rounded-xl border border-neutral-100 shadow-card p-5 space-y-3">
+        <h3 className="font-semibold text-neutral-800 text-sm">Add a reply</h3>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}

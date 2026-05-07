@@ -44,46 +44,64 @@ export default function ForumDetail() {
 
   return (
     <div>
-      <Link
-        to={`/courses/${courseId}`}
-        className="inline-flex items-center gap-1 text-sm text-neutral-400
-                   hover:text-primary transition-colors no-underline"
-      >
-        ← Back to course
-      </Link>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-xs text-neutral-400 mb-5">
+        <Link to="/" className="hover:text-primary no-underline transition-colors">Dashboard</Link>
+        <span>/</span>
+        <Link to={`/courses/${courseId}`} className="hover:text-primary no-underline transition-colors">
+          Course
+        </Link>
+        <span>/</span>
+        <span className="text-neutral-700 font-medium">{forumTitle}</span>
+      </nav>
 
-      <div className="page-header mt-3">
-        <h1 className="page-title">{forumTitle}</h1>
+      {/* Forum header */}
+      <div className="bg-secondary rounded-2xl px-6 py-5 mb-6 text-white flex items-center gap-4">
+        <div className="w-12 h-12 rounded-xl bg-white/20 flex items-center justify-center text-2xl flex-shrink-0">
+          💬
+        </div>
+        <div>
+          <h1 className="text-xl font-bold text-white">{forumTitle}</h1>
+          <p className="text-white/60 text-sm mt-0.5">{threads.length} thread{threads.length !== 1 ? 's' : ''}</p>
+        </div>
       </div>
 
-      <div className="space-y-3 mb-8">
+      <div className="space-y-2 mb-8">
+        {threads.length === 0 && (
+          <p className="text-neutral-400 text-sm">No threads yet. Start one below.</p>
+        )}
         {threads.map((t) => (
           <Link
             key={t.threadid}
             to={`/courses/${courseId}/forums/${forumId}/threads/${t.threadid}`}
-            className="card-hover no-underline block group"
+            className="flex items-center gap-4 bg-white rounded-xl border border-neutral-100
+                       shadow-card hover:shadow-card-hover transition-shadow no-underline group px-5 py-4"
           >
-            <p className="font-semibold text-neutral-900 group-hover:text-primary transition-colors">
-              {t.title}
-            </p>
-            <p className="text-xs text-neutral-400 mt-1">
-              by {t.authorname}
-              {' · '}
-              {new Date(t.createdat).toLocaleString()}
-              {' · '}
+            {/* Author initial avatar */}
+            <div className="w-9 h-9 rounded-full bg-primary-50 text-primary font-bold
+                            flex items-center justify-center text-sm flex-shrink-0">
+              {t.authorname.charAt(0).toUpperCase()}
+            </div>
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-neutral-900 group-hover:text-primary
+                            transition-colors text-sm truncate">
+                {t.title}
+              </p>
+              <p className="text-xs text-neutral-400 mt-0.5">
+                by {t.authorname} &middot; {new Date(t.createdat).toLocaleDateString()}
+              </p>
+            </div>
+            <span className="flex-shrink-0 text-xs text-neutral-400">
               {t.replycount} {t.replycount === 1 ? 'reply' : 'replies'}
-            </p>
+            </span>
           </Link>
         ))}
-        {threads.length === 0 && (
-          <p className="text-neutral-400 text-sm">No threads yet. Start one below.</p>
-        )}
       </div>
 
       {msg && <p className="text-success text-sm mb-3 font-medium">{msg}</p>}
 
-      <div className="card">
-        <h3 className="font-semibold text-neutral-800 mb-4">Start a new thread</h3>
+      <div className="bg-white rounded-xl border border-neutral-100 shadow-card p-5">
+        <h3 className="font-semibold text-neutral-800 mb-4 text-sm">Start a new thread</h3>
         <form onSubmit={handleCreate} className="space-y-3">
           <input
             placeholder="Title"

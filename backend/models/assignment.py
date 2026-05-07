@@ -28,6 +28,19 @@ def get_by_id(assignment_id: int) -> dict | None:
     )
 
 
+def get_full_by_id(assignment_id: int) -> dict | None:
+    """Return full assignment details including course info."""
+    return query_one(
+        """SELECT a.AssignmentID, a.CourseID, a.Title, a.Description,
+                  a.DueDate, a.MaxGrade, a.CreatedAt,
+                  c.CourseTitle, c.CourseCode
+           FROM Assignments a
+           JOIN Courses c ON a.CourseID = c.CourseID
+           WHERE a.AssignmentID = %s""",
+        (assignment_id,),
+    )
+
+
 def get_with_course(assignment_id: int) -> dict | None:
     """Return an assignment joined with its course's LecID and MaxGrade."""
     return query_one(
@@ -147,6 +160,24 @@ def upsert_grade(
                    GradedAt = NOW()
            RETURNING GradeID, SubmissionID, Grade, GradedBy, GradedAt""",
         (submission_id, grade, graded_by),
+    )
+
+
+def get_student_grades(student_id: str) -> list[dict]:
+    """Return all graded submissions for a student across all courses."""
+    return query_all(
+        """SELECT s.SubmissionID, s.AssignmentID, a.Title AS AssignmentTitle,
+                  a.CourseID, c.CourseTitle, a.MaxGrade,
+                  g.Grade,
+                  ROUND((g.Grade / NULLIF(a.MaxGrade, 0)) * 100, 2) AS Percentage,
+                  g.GradedAt, s.SubmittedAt
+           FROM Submissions s
+           JOIN Assignments a ON s.AssignmentID = a.AssignmentID
+           JOIN Courses c     ON a.CourseID      = c.CourseID
+           LEFT JOIN Grades g ON s.SubmissionID  = g.SubmissionID
+           WHERE s.StudentID = %s
+           ORDER BY s.SubmittedAt DESC""",
+        (student_id,),
     )
 
 
