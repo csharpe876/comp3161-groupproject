@@ -67,3 +67,68 @@ def top10_averages():
     if err:
         return err
     return jsonify(report_model.top10_averages()), 200
+
+
+# ── Ad-hoc stats ─────────────────────────────────────────────────────────────
+
+@api.route("/stats/total-students", methods=["GET"])
+@jwt_required()
+def total_students():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.total_students()), 200
+
+
+@api.route("/stats/total-lecturers", methods=["GET"])
+@jwt_required()
+def total_lecturers():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.total_lecturers()), 200
+
+
+@api.route("/stats/total-courses", methods=["GET"])
+@jwt_required()
+def total_courses():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.total_courses()), 200
+
+
+@api.route("/stats/enrollment-per-course", methods=["GET"])
+@jwt_required()
+def enrollment_per_course():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.enrollment_per_course()), 200
+
+
+@api.route("/stats/courses-per-lecturer", methods=["GET"])
+@jwt_required()
+def courses_per_lecturer():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.courses_per_lecturer()), 200
+
+
+@api.route("/stats/students-lt3-courses", methods=["GET"])
+@jwt_required()
+def students_lt3_courses():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.students_lt3_courses()), 200
+
+
+@api.route("/stats/lecturers-no-courses", methods=["GET"])
+@jwt_required()
+def lecturers_no_courses():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.lecturers_no_courses()), 200

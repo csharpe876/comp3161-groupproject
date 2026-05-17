@@ -860,6 +860,131 @@
           }
         }
       ]
+    },
+    {
+      "name": "📈 Stats (Admin/Lecturer)",
+      "description": "Ad-hoc statistics endpoints. All require an Admin or Lecturer JWT — run 'Login as Admin' first.",
+      "item": [
+        {
+          "name": "Total Students",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/stats/total-students",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "stats", "total-students"]
+            },
+            "description": "Returns the total number of Student accounts."
+          }
+        },
+        {
+          "name": "Total Lecturers",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/stats/total-lecturers",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "stats", "total-lecturers"]
+            },
+            "description": "Returns the total number of Lecturer accounts."
+          }
+        },
+        {
+          "name": "Total Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/stats/total-courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "stats", "total-courses"]
+            },
+            "description": "Returns the total number of courses in the system."
+          }
+        },
+        {
+          "name": "Enrollment Count per Course",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/stats/enrollment-per-course",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "stats", "enrollment-per-course"]
+            },
+            "description": "Returns every course with its enrolled student count, sorted descending."
+          }
+        },
+        {
+          "name": "Courses Taught per Lecturer",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/stats/courses-per-lecturer",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "stats", "courses-per-lecturer"]
+            },
+            "description": "Returns every lecturer with the number of courses they are assigned to, sorted descending."
+          }
+        },
+        {
+          "name": "Students Enrolled in Fewer Than 3 Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/stats/students-lt3-courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "stats", "students-lt3-courses"]
+            },
+            "description": "Returns all students whose enrollment count is 0, 1, or 2."
+          }
+        },
+        {
+          "name": "Lecturers with No Courses Assigned",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/stats/lecturers-no-courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "stats", "lecturers-no-courses"]
+            },
+            "description": "Returns all lecturers who are not currently assigned as the lecturer for any course."
+          }
+        }
+      ]
     }
   ]
 }
