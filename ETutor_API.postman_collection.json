@@ -191,9 +191,12 @@
       "name": "📚 Courses",
       "item": [
         {
-          "name": "List All Courses (public)",
+          "name": "List All Courses",
           "request": {
-            "auth": { "type": "noauth" },
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -201,12 +204,16 @@
               "host": ["{{baseUrl}}"],
               "path": ["api", "courses"]
             },
-            "description": "Returns all courses. No auth required."
+            "description": "Returns all courses."
           }
         },
         {
           "name": "Get Course by ID",
           "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
             "method": "GET",
             "header": [],
             "url": {
@@ -259,6 +266,22 @@
             "auth": {
               "type": "bearer",
               "bearer": [{ "key": "token", "value": "{{lecturerToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/lecturers/{{lecturerId}}/courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "lecturers", "{{lecturerId}}", "courses"]
+            }
+          }
+        },
+        {
+          "name": "Get My Courses (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
             },
             "method": "GET",
             "header": [],
@@ -325,6 +348,22 @@
               "path": ["api", "courses", "{{courseId}}", "members"]
             }
           }
+        },
+        {
+          "name": "Get Course Members (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "members"]
+            }
+          }
         }
       ]
     },
@@ -349,6 +388,26 @@
             "auth": {
               "type": "bearer",
               "bearer": [{ "key": "token", "value": "{{lecturerToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Midterm Exam\",\n  \"description\": \"Covers topics from weeks 1-6.\",\n  \"event_date\": \"2026-06-15\",\n  \"event_time\": \"09:00\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/events",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "events"]
+            }
+          }
+        },
+        {
+          "name": "Create Course Event (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
             },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -418,6 +477,40 @@
             "auth": {
               "type": "bearer",
               "bearer": [{ "key": "token", "value": "{{lecturerToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"General Discussion\",\n  \"description\": \"Ask questions and discuss course material here.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/forums",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "forums"]
+            }
+          }
+        },
+        {
+          "name": "Create Forum (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.forumid) pm.collectionVariables.set('forumId', body.forumid);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
             },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -589,11 +682,66 @@
           }
         },
         {
+          "name": "Create Section (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.sectionid) pm.collectionVariables.set('sectionId', body.sectionid);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"section_name\": \"Week 1 — Introduction\",\n  \"order_index\": 1\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/sections",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "sections"]
+            }
+          }
+        },
+        {
           "name": "Add Content Item to Section (Lecturer/Admin)",
           "request": {
             "auth": {
               "type": "bearer",
               "bearer": [{ "key": "token", "value": "{{lecturerToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Lecture 1 Slides\",\n  \"content_type\": \"slide\",\n  \"content_url\": \"https://example.com/slides/lecture1.pdf\",\n  \"description\": \"Introduction to database concepts.\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/sections/{{sectionId}}/content",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "sections", "{{sectionId}}", "content"]
+            },
+            "description": "content_type must be: link, file, or slide. content_url must start with http:// or https://."
+          }
+        },
+        {
+          "name": "Add Content Item to Section (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
             },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
@@ -673,6 +821,40 @@
           }
         },
         {
+          "name": "Create Assignment (Admin)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const body = pm.response.json();",
+                  "    if (body.assignmentid) pm.collectionVariables.set('assignmentId', body.assignmentid);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Assignment 1 — ER Diagram\",\n  \"description\": \"Design an ER diagram for the given scenario.\",\n  \"due_date\": \"2026-06-30T23:59:00\",\n  \"max_grade\": 100\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/courses/{{courseId}}/assignments",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "courses", "{{courseId}}", "assignments"]
+            }
+          }
+        },
+        {
           "name": "Submit Assignment (Student)",
           "event": [
             {
@@ -725,6 +907,27 @@
             "auth": {
               "type": "bearer",
               "bearer": [{ "key": "token", "value": "{{lecturerToken}}", "type": "string" }]
+            },
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"grade\": 87.5\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/api/submissions/{{submissionId}}/grade",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "submissions", "{{submissionId}}", "grade"]
+            },
+            "description": "Upserts the grade. grade must be between 0 and the assignment's max_grade."
+          }
+        },
+        {
+          "name": "Grade Submission (Admin)",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
             },
             "method": "POST",
             "header": [{ "key": "Content-Type", "value": "application/json" }],
