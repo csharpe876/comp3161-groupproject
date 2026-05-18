@@ -132,3 +132,68 @@ def lecturers_no_courses():
     if err:
         return err
     return jsonify(report_model.lecturers_no_courses()), 200
+
+
+# ── Constraint checks ─────────────────────────────────────────────────────────
+
+@api.route("/checks/min-students", methods=["GET"])
+@jwt_required()
+def check_min_students():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.check_min_students()), 200
+
+
+@api.route("/checks/min-courses", methods=["GET"])
+@jwt_required()
+def check_min_courses():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.check_min_courses()), 200
+
+
+@api.route("/checks/students-max-6", methods=["GET"])
+@jwt_required()
+def check_students_max_6():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.check_students_max_6()), 200
+
+
+@api.route("/checks/students-min-3", methods=["GET"])
+@jwt_required()
+def check_students_min_3():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.check_students_min_3()), 200
+
+
+@api.route("/checks/courses-min-10", methods=["GET"])
+@jwt_required()
+def check_courses_min_10():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.check_courses_min_10()), 200
+
+
+@api.route("/checks/lecturers-max-5", methods=["GET"])
+@jwt_required()
+def check_lecturers_max_5():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.check_lecturers_max_5()), 200
+
+
+@api.route("/checks/lecturers-min-1", methods=["GET"])
+@jwt_required()
+def check_lecturers_min_1():
+    err = _require_staff()
+    if err:
+        return err
+    return jsonify(report_model.check_lecturers_min_1()), 200

@@ -985,6 +985,131 @@
           }
         }
       ]
+    },
+    {
+      "name": "✅ Constraint Checks (Admin)",
+      "description": "Verify the 7 data constraints. Each response includes a `passes` boolean — `true` means the constraint is satisfied. Counts (a, b) must be above the threshold; violation lists (c–g) must be empty. Run 'Login as Admin' first.",
+      "item": [
+        {
+          "name": "(a) Min 100,000 Students",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/checks/min-students",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "checks", "min-students"]
+            },
+            "description": "Returns total student count and passes=true if count >= 100,000."
+          }
+        },
+        {
+          "name": "(b) Min 200 Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/checks/min-courses",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "checks", "min-courses"]
+            },
+            "description": "Returns total course count and passes=true if count >= 200."
+          }
+        },
+        {
+          "name": "(c) No Student Over 6 Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/checks/students-max-6",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "checks", "students-max-6"]
+            },
+            "description": "Returns any students enrolled in more than 6 courses. violations array should be empty."
+          }
+        },
+        {
+          "name": "(d) All Students in Min 3 Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/checks/students-min-3",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "checks", "students-min-3"]
+            },
+            "description": "Returns any students enrolled in fewer than 3 courses. violations array should be empty."
+          }
+        },
+        {
+          "name": "(e) All Courses Have Min 10 Members",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/checks/courses-min-10",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "checks", "courses-min-10"]
+            },
+            "description": "Returns any courses with fewer than 10 enrolled students. violations array should be empty."
+          }
+        },
+        {
+          "name": "(f) No Lecturer Over 5 Courses",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/checks/lecturers-max-5",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "checks", "lecturers-max-5"]
+            },
+            "description": "Returns any lecturers teaching more than 5 courses. violations array should be empty."
+          }
+        },
+        {
+          "name": "(g) All Lecturers Teach Min 1 Course",
+          "request": {
+            "auth": {
+              "type": "bearer",
+              "bearer": [{ "key": "token", "value": "{{adminToken}}", "type": "string" }]
+            },
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/api/reports/checks/lecturers-min-1",
+              "host": ["{{baseUrl}}"],
+              "path": ["api", "reports", "checks", "lecturers-min-1"]
+            },
+            "description": "Returns any lecturers assigned to zero courses. violations array should be empty."
+          }
+        }
+      ]
     }
   ]
 }
