@@ -56,9 +56,9 @@ def create_assignment(course_id: str):
     if not data:
         return jsonify({"error": "JSON body required"}), 400
 
-    title       = (data.get("title") or "").strip()
+    title = (data.get("title") or "").strip()
     description = data.get("description") or ""
-    due_date    = data.get("due_date")
+    due_date = data.get("due_date")
 
     try:
         max_grade = float(data.get("max_grade", 100))
@@ -129,7 +129,7 @@ def get_submissions(assignment_id: int):
     Lecturers/Admins see all submissions.
     Students see only their own submission.
     """
-    role   = get_jwt().get("role", "")
+    role = get_jwt().get("role", "")
     caller = get_jwt_identity()
 
     if not assignment_model.get_by_id(assignment_id):
@@ -187,7 +187,7 @@ def grade_submission(submission_id: int):
 def get_student_average(student_id: str):
     """Return the overall grade average (as a percentage) for a student."""
     caller = get_jwt_identity()
-    role   = get_jwt().get("role", "")
+    role = get_jwt().get("role", "")
     if role not in ("Admin", "Lecturer") and caller != student_id:
         return jsonify({"error": "You may only view your own grade average"}), 403
 
@@ -203,13 +203,13 @@ def get_student_average(student_id: str):
 def get_student_grades(student_id: str):
     """Return all graded submissions for a student (grade book)."""
     caller = get_jwt_identity()
-    role   = get_jwt().get("role", "")
+    role = get_jwt().get("role", "")
     if role not in ("Admin", "Lecturer") and caller != student_id:
         return jsonify({"error": "You may only view your own grades"}), 403
 
     if not user_model.find_by_id_and_type(student_id, "Student"):
         return jsonify({"error": "Student not found"}), 404
 
-    grades  = assignment_model.get_student_grades(student_id)
+    grades = assignment_model.get_student_grades(student_id)
     average = assignment_model.get_student_average(student_id)
     return jsonify({"student_id": student_id, "overall_average": average, "grades": grades}), 200

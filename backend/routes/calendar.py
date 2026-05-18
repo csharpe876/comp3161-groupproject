@@ -44,10 +44,10 @@ def create_course_event(course_id: str):
     if not data:
         return jsonify({"error": "JSON body required"}), 400
 
-    title       = (data.get("title") or "").strip()
+    title = (data.get("title") or "").strip()
     description = data.get("description") or ""
-    event_date  = data.get("event_date")
-    event_time  = data.get("event_time")
+    event_date = data.get("event_date")
+    event_time = data.get("event_time")
 
     if not title or not event_date:
         return jsonify({"error": "title and event_date are required"}), 400
@@ -85,7 +85,7 @@ def get_student_events_by_date(student_id: str):
     Query parameter: ?date=YYYY-MM-DD  (required)
     """
     caller = get_jwt_identity()
-    role   = get_jwt().get("role", "")
+    role = get_jwt().get("role", "")
     if role not in ("Admin", "Lecturer") and caller != student_id:
         return jsonify({"error": "You may only view your own calendar"}), 403
 
@@ -100,5 +100,3 @@ def get_student_events_by_date(student_id: str):
 
     events = calendar_model.get_student_events_for_date(student_id, event_date)
     return jsonify(events), 200
-
-

@@ -46,11 +46,11 @@ def create_course():
     if not data:
         return jsonify({"error": "JSON body required"}), 400
 
-    course_id   = (data.get("course_id") or "").strip()
-    title       = (data.get("title") or "").strip()
-    code        = (data.get("code") or "").strip()
+    course_id = (data.get("course_id") or "").strip()
+    title = (data.get("title") or "").strip()
+    code = (data.get("code") or "").strip()
     description = (data.get("description") or "")
-    lec_id      = (data.get("lec_id") or "").strip() or None
+    lec_id = (data.get("lec_id") or "").strip() or None
 
     if not all([course_id, title, code]):
         return jsonify({"error": "course_id, title, and code are required"}), 400
@@ -74,7 +74,7 @@ def create_course():
 def get_student_courses(student_id: str):
     # Students may only view their own course list; Lecturers and Admins may view any.
     caller = get_jwt_identity()
-    role   = _role()
+    role = _role()
     if role not in ("Admin", "Lecturer") and caller != student_id:
         return jsonify({"error": "You may only view your own course list"}), 403
     return jsonify(course_model.get_for_student(student_id)), 200
@@ -85,7 +85,7 @@ def get_student_courses(student_id: str):
 def get_lecturer_courses(lecturer_id: str):
     # Lecturers may only view their own list; Admins may view any lecturer's list.
     caller = get_jwt_identity()
-    role   = _role()
+    role = _role()
     if role != "Admin" and caller != lecturer_id:
         return jsonify({"error": "You may only view your own course list"}), 403
     return jsonify(course_model.get_for_lecturer(lecturer_id)), 200
@@ -97,9 +97,9 @@ def get_lecturer_courses(lecturer_id: str):
 @api.route("/courses/<course_id>/enroll", methods=["POST"])
 @jwt_required()
 def enroll_student(course_id: str):
-    role    = _role()
-    caller  = get_jwt_identity()
-    data    = request.get_json(silent=True) or {}
+    role = _role()
+    caller = get_jwt_identity()
+    data = request.get_json(silent=True) or {}
 
     if role == "Student":
         student_id = caller
@@ -134,7 +134,7 @@ def assign_lecturer(course_id: str):
     if _role() != "Admin":
         return jsonify({"error": "Admin access required"}), 403
 
-    data   = request.get_json(silent=True) or {}
+    data = request.get_json(silent=True) or {}
     lec_id = (data.get("lec_id") or "").strip()
     if not lec_id:
         return jsonify({"error": "lec_id is required"}), 400

@@ -80,10 +80,10 @@ def add_content_item(section_id: int):
     if not data:
         return jsonify({"error": "JSON body required"}), 400
 
-    title        = (data.get("title") or "").strip()
+    title = (data.get("title") or "").strip()
     content_type = (data.get("content_type") or "").strip().lower()
-    content_url  = (data.get("content_url") or "").strip()
-    description  = data.get("description") or ""
+    content_url = (data.get("content_url") or "").strip()
+    description = data.get("description") or ""
 
     if not all([title, content_type, content_url]):
         return jsonify({"error": "title, content_type, and content_url are required"}), 400
@@ -97,5 +97,3 @@ def add_content_item(section_id: int):
 
     item = content_model.add_item(section_id, title, content_type, content_url, description)
     return jsonify(item), 201
-
-

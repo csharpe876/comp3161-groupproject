@@ -31,15 +31,15 @@ def register():
     if not data:
         return jsonify({"error": "JSON body required"}), 400
 
-    user_id      = (data.get("userid") or "").strip()
-    password     = (data.get("password") or "").strip()
-    name         = (data.get("name") or "").strip()
-    email        = (data.get("email") or "").strip()
+    user_id = (data.get("userid") or "").strip()
+    password = (data.get("password") or "").strip()
+    name = (data.get("name") or "").strip()
+    email = (data.get("email") or "").strip()
     account_type = (data.get("account_type") or "Student").strip()
 
     # ── Required field validation ──────────────────────────────────────────
     missing = [f for f, v in [("userid", user_id), ("password", password),
-                               ("name", name), ("email", email)] if not v]
+                              ("name", name), ("email", email)] if not v]
     if missing:
         return jsonify({"error": f"Required fields missing: {', '.join(missing)}"}), 400
 
@@ -80,7 +80,7 @@ def login():
         return jsonify({"error": "JSON body required"}), 400
 
     identifier = (data.get("userid") or data.get("email") or "").strip()
-    password   = (data.get("password") or "").strip()
+    password = (data.get("password") or "").strip()
 
     if not identifier:
         return jsonify({"error": "userid or email is required"}), 400

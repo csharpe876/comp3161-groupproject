@@ -38,7 +38,7 @@ def create_forum(course_id: str):
     if not data:
         return jsonify({"error": "JSON body required"}), 400
 
-    title       = (data.get("title") or "").strip()
+    title = (data.get("title") or "").strip()
     description = data.get("description") or ""
 
     if not title:
@@ -71,7 +71,7 @@ def create_thread(forum_id: int):
     if not data:
         return jsonify({"error": "JSON body required"}), 400
 
-    title   = (data.get("title") or "").strip()
+    title = (data.get("title") or "").strip()
     content = (data.get("content") or "").strip()
 
     if not title or not content:
@@ -132,5 +132,3 @@ def reply_to_reply(reply_id: int):
 
     reply = forum_model.create_reply(parent["threadid"], reply_id, get_jwt_identity(), content)
     return jsonify(reply), 201
-
-
